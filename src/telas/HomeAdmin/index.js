@@ -1,0 +1,99 @@
+import React, { useCallback, useState } from 'react';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import ScreenContainer from '../../components/ScreenContainer';
+import ConsultaCard from '../../components/ConsultaCard';
+import { getConsultasByUsuario, getUsuarios } from '../../data/mockApi';
+import { colors } from '../../services/theme';
+
+export default function HomeAdmin({ user }) {
+  const [consultas, setConsultas] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const carregarDados = useCallback(async () => {
+    setRefreshing(true);
+    const [consultasData, usuariosData] = await Promise.all([
+      getConsultasByUsuario(user.id),
+      getUsuarios(),
+    ]);
+    setConsultas(consultasData);
+    setUsuarios(usuariosData);
+    setRefreshing(false);
+  }, [user.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      carregarDados();
+    }, [carregarDados])
+  );
+
+  return (
+    <ScreenContainer>
+      <FlatList
+        data={consultas}
+        keyExtractor={(item) => item.id.toString()}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={carregarDados} />}
+        ListHeaderComponent={
+          <View>
+            <Text style={styles.title}>Painel Admin</Text>
+            <Text style={styles.sectionTitle}>Consultas gerais</Text>
+          </View>
+        }
+        renderItem={({ item }) => <ConsultaCard consulta={item} />}
+        ListFooterComponent={
+          <View style={styles.footer}>
+            <Text style={styles.sectionTitle}>Usuários</Text>
+            {usuarios.map((usuario) => (
+              <View key={usuario.id} style={styles.userCard}>
+                <Text style={styles.userName}>{usuario.nome}</Text>
+                <Text style={styles.userInfo}>{usuario.email}</Text>
+                <Text style={styles.userInfo}>Tipo: {usuario.tipo}</Text>
+              </View>
+            ))}
+          </View>
+        }
+      />
+    </ScreenContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.primary,
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: colors.text,
+  },
+  footer: {
+    marginTop: 12,
+    paddingBottom: 20,
+  },
+  userCard: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 10,
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  userName: {
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  userInfo: {
+    color: colors.text,
+    marginTop: 2,
+  },
+});
