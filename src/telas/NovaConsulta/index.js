@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { Picker } from '@react-native-picker/picker';
 import ActionButton from '../../components/ActionButton';
 import FadeInView from '../../components/FadeInView';
 import ScreenContainer from '../../components/ScreenContainer';
@@ -22,10 +23,13 @@ export default function NovaConsulta({ user }) {
   const [loading, setLoading] = useState(false);
 
   const salasDisponiveis = useMemo(() => salas.filter((sala) => sala.status === 'disponivel'), [salas]);
+  const pacienteSelecionado = pacientes.find((paciente) => paciente.id === pacienteId) || null;
+  const estagiarioSelecionado = estagiarios.find((estagiario) => estagiario.id === estagiarioId) || null;
 
   const carregarDados = useCallback(async () => {
+    const filtroEstagiario = user.tipo === 'estagiario' ? user.id : null;
     const [pacientesData, estagiariosData, salasData] = await Promise.all([
-      getPacientes(),
+      getPacientes(filtroEstagiario),
       getEstagiarios(),
       getSalas(),
     ]);
@@ -33,7 +37,23 @@ export default function NovaConsulta({ user }) {
     setPacientes(pacientesData);
     setEstagiarios(estagiariosData);
     setSalas(salasData);
-  }, []);
+  }, [user.id, user.tipo]);
+
+  const selecionarPaciente = useCallback(
+    (novoPacienteId) => {
+      const paciente = pacientes.find((item) => item.id === novoPacienteId);
+      setPacienteId(novoPacienteId);
+
+      if (paciente?.responsavelEstagiarioId) {
+        setEstagiarioId(paciente.responsavelEstagiarioId);
+      } else if (user.tipo === 'estagiario') {
+        setEstagiarioId(user.id);
+      } else {
+        setEstagiarioId(null);
+      }
+    },
+    [pacientes, user.id, user.tipo]
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -78,50 +98,47 @@ export default function NovaConsulta({ user }) {
 
           <View style={styles.card}>
             <Text style={styles.label}>Paciente:</Text>
-            {pacientes.map((paciente) => (
-              <View key={paciente.id} style={styles.optionButton}>
-                <ActionButton
-                  title={paciente.nome}
-                  variant={pacienteId === paciente.id ? 'primary' : 'secondary'}
-                  onPress={() => setPacienteId(paciente.id)}
-                />
-              </View>
-            ))}
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={pacienteId ?? ''}
+                onValueChange={(itemValue) => selecionarPaciente(itemValue || null)}
+              >
+                <Picker.Item label="Selecione um paciente" value="" />
+                {pacientes.map((paciente) => (
+                  <Picker.Item key={paciente.id} label={paciente.nome} value={paciente.id} />
+                ))}
+              </Picker>
+            </View>
+            {pacientes.length === 0 ? (
+              <Text style={styles.helperText}>Nenhum paciente disponível para este estagiário.</Text>
+            ) : null}
           </View>
 
-          {user.tipo === 'admin' && (
-            <View style={styles.card}>
-              <Text style={styles.label}>Estagiário:</Text>
-              {estagiarios.map((estagiario) => (
-                <View key={estagiario.id} style={styles.optionButton}>
-                  <ActionButton
-                    title={estagiario.nome}
-                    variant={estagiarioId === estagiario.id ? 'primary' : 'secondary'}
-                    onPress={() => setEstagiarioId(estagiario.id)}
-                  />
-                </View>
-              ))}
-            </View>
-          )}
-
-          {user.tipo === 'estagiario' && (
-            <View style={styles.card}>
-              <Text style={styles.label}>Estagiário responsável:</Text>
-              <Text style={styles.readOnlyText}>{user.nome}</Text>
-            </View>
-          )}
+          <View style={styles.card}>
+            <Text style={styles.label}>Estagiário responsável:</Text>
+            <Text style={styles.readOnlyText}>
+              {estagiarioSelecionado?.nome || 'Selecione um paciente para ver o responsável'}
+            </Text>
+            {pacienteSelecionado ? (
+              <Text style={styles.helperText}>
+                Cada paciente possui vínculo exclusivo com um estagiário.
+              </Text>
+            ) : null}
+          </View>
 
           <View style={styles.card}>
             <Text style={styles.label}>Sala disponível:</Text>
-            {salasDisponiveis.map((sala) => (
-              <View key={sala.id} style={styles.optionButton}>
-                <ActionButton
-                  title={sala.nome}
-                  variant={salaId === sala.id ? 'primary' : 'secondary'}
-                  onPress={() => setSalaId(sala.id)}
-                />
-              </View>
-            ))}
+            <View style={styles.pickerContainer}>
+              <Picker selectedValue={salaId ?? ''} onValueChange={(itemValue) => setSalaId(itemValue || null)}>
+                <Picker.Item label="Selecione uma sala" value="" />
+                {salasDisponiveis.map((sala) => (
+                  <Picker.Item key={sala.id} label={`${sala.nome} (${sala.status})`} value={sala.id} />
+                ))}
+              </Picker>
+            </View>
+            {salasDisponiveis.length === 0 ? (
+              <Text style={styles.helperText}>Não há salas disponíveis no momento.</Text>
+            ) : null}
           </View>
 
           <View style={styles.card}>
@@ -169,6 +186,13 @@ const styles = StyleSheet.create({
   optionButton: {
     marginBottom: 8,
   },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+  },
   input: {
     borderWidth: 1,
     borderColor: colors.border,
@@ -182,5 +206,10 @@ const styles = StyleSheet.create({
   readOnlyText: {
     color: colors.primary,
     fontWeight: '700',
+  },
+  helperText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: colors.muted,
   },
 });

@@ -7,6 +7,7 @@ import NovaConsulta from '../telas/NovaConsulta';
 import Salas from '../telas/Salas';
 import UsuariosAdmin from '../telas/UsuariosAdmin';
 import { colors } from '../services/theme';
+import { getHeaderIconsOptions } from './headerConfig';
 
 const Tab = createBottomTabNavigator();
 function LogoutPlaceholder() {
@@ -35,6 +36,7 @@ export default function AdminStack({ user, onLogout }) {
         tabBarLabelStyle: { fontSize: 10 },
         headerStyle: { backgroundColor: colors.primary },
         headerTintColor: '#fff',
+        ...getHeaderIconsOptions(),
       })}
     >
       <Tab.Screen name="HomeAdmin" options={{ title: 'Home' }}>

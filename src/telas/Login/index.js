@@ -29,12 +29,9 @@ export default function Login({ onLogin, navigation }) {
 
   return (
     <ScreenContainer centered>
-      <View style={styles.card}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Clínica Psicológica</Text>
-          <Text style={styles.subtitle}>Faça login para continuar</Text>
-        </View>
+      <Text style={styles.title}>Clínica Psicológica</Text>
 
+      <View style={styles.form}>
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -72,36 +69,16 @@ export default function Login({ onLogin, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: '#ffffff',
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 20,
-    alignSelf: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  header: {
-    marginBottom: 16,
-    alignItems: 'center',
-  },
   title: {
-    fontSize: 26,
+    fontSize: 30,
     fontWeight: '700',
     color: colors.primary,
     textAlign: 'center',
+    marginBottom: 24,
   },
-  subtitle: {
-    marginTop: 6,
-    color: colors.muted,
-    fontSize: 15,
-    textAlign: 'center',
+  form: {
+    width: '100%',
+    maxWidth: 420,
   },
   input: {
     borderWidth: 1,

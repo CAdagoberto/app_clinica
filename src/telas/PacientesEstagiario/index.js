@@ -16,16 +16,16 @@ function getStatusStyle(status) {
   return { backgroundColor: '#d1fae5', color: colors.primary };
 }
 
-export default function PacientesEstagiario() {
+export default function PacientesEstagiario({ user }) {
   const [pacientes, setPacientes] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const carregarPacientes = useCallback(async () => {
     setRefreshing(true);
-    const dados = await getPacientesComStatus();
+    const dados = await getPacientesComStatus(user.id);
     setPacientes(dados);
     setRefreshing(false);
-  }, []);
+  }, [user.id]);
 
   useFocusEffect(
     useCallback(() => {

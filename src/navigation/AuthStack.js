@@ -14,7 +14,7 @@ export default function AuthStack({ onLogin }) {
         headerTintColor: '#fff',
       }}
     >
-      <Stack.Screen name="Login" options={{ title: 'Entrar' }}>
+      <Stack.Screen name="Login" options={{ title: 'Entrar', headerShown: false }}>
         {(props) => <Login {...props} onLogin={onLogin} />}
       </Stack.Screen>
       <Stack.Screen name="Cadastro" component={Cadastro} />

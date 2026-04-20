@@ -7,6 +7,7 @@ import NovaConsulta from '../telas/NovaConsulta';
 import PacientesEstagiario from '../telas/PacientesEstagiario';
 import Salas from '../telas/Salas';
 import { colors } from '../services/theme';
+import { getHeaderIconsOptions } from './headerConfig';
 
 const Tab = createBottomTabNavigator();
 function LogoutPlaceholder() {
@@ -35,12 +36,15 @@ export default function EstagiarioStack({ user, onLogout }) {
         tabBarLabelStyle: { fontSize: 10 },
         headerStyle: { backgroundColor: colors.primary },
         headerTintColor: '#fff',
+        ...getHeaderIconsOptions(),
       })}
     >
       <Tab.Screen name="HomeEstagiario" options={{ title: 'Minhas consultas' }}>
         {(props) => <HomeEstagiario {...props} user={user} />}
       </Tab.Screen>
-      <Tab.Screen name="Pacientes" component={PacientesEstagiario} />
+      <Tab.Screen name="Pacientes">
+        {(props) => <PacientesEstagiario {...props} user={user} />}
+      </Tab.Screen>
       <Tab.Screen name="Salas" component={Salas} />
       <Tab.Screen name="NovaConsulta" options={{ title: 'Nova Consulta' }}>
         {(props) => <NovaConsulta {...props} user={user} />}

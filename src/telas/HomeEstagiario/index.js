@@ -23,9 +23,27 @@ export default function HomeEstagiario({ user }) {
     }, [carregarConsultas])
   );
 
+  const examesPendentes = consultas.filter((consulta) => consulta.status === 'pendente').length;
+  const examesConfirmados = consultas.filter((consulta) => consulta.status === 'confirmado').length;
+  const totalPacientes = new Set(consultas.map((consulta) => consulta.pacienteId)).size;
+
   return (
     <ScreenContainer>
       <Text style={styles.title}>Consultas de Hoje</Text>
+      <View style={styles.statsContainer}>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{examesPendentes}</Text>
+          <Text style={styles.statLabel}>Exames pendentes</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{examesConfirmados}</Text>
+          <Text style={styles.statLabel}>Exames confirmados</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>{totalPacientes}</Text>
+          <Text style={styles.statLabel}>Pacientes</Text>
+        </View>
+      </View>
       <FlatList
         data={consultas}
         keyExtractor={(item) => item.id.toString()}
@@ -50,6 +68,32 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.primary,
     marginBottom: 12,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  statCard: {
+    width: '31.5%',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  statLabel: {
+    marginTop: 4,
+    fontSize: 12,
+    color: colors.text,
+    textAlign: 'center',
   },
   row: {
     marginTop: 8,

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import HomePaciente from '../telas/HomePaciente';
 import CheckIn from '../telas/CheckIn';
 import { colors } from '../services/theme';
+import { getHeaderIconsOptions } from './headerConfig';
 
 const Tab = createBottomTabNavigator();
 function LogoutPlaceholder() {
@@ -28,6 +29,7 @@ export default function PacienteStack({ user, onLogout }) {
         tabBarStyle: { backgroundColor: '#fff' },
         headerStyle: { backgroundColor: colors.primary },
         headerTintColor: '#fff',
+        ...getHeaderIconsOptions(),
       })}
     >
       <Tab.Screen name="HomePaciente" options={{ title: 'Home' }}>

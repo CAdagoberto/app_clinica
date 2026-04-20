@@ -28,6 +28,10 @@ export default function HomeAdmin({ user }) {
     }, [carregarDados])
   );
 
+  const examesPendentes = consultas.filter((consulta) => consulta.status === 'pendente').length;
+  const examesConfirmados = consultas.filter((consulta) => consulta.status === 'confirmado').length;
+  const totalEstagiarios = usuarios.filter((usuario) => usuario.tipo === 'estagiario').length;
+
   return (
     <ScreenContainer>
       <FlatList
@@ -37,6 +41,20 @@ export default function HomeAdmin({ user }) {
         ListHeaderComponent={
           <View>
             <Text style={styles.title}>Painel Admin</Text>
+            <View style={styles.statsContainer}>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{examesPendentes}</Text>
+                <Text style={styles.statLabel}>Exames pendentes</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{examesConfirmados}</Text>
+                <Text style={styles.statLabel}>Exames confirmados</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{totalEstagiarios}</Text>
+                <Text style={styles.statLabel}>Estagiários</Text>
+              </View>
+            </View>
             <Text style={styles.sectionTitle}>Consultas gerais</Text>
           </View>
         }
@@ -70,6 +88,32 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
     color: colors.text,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  statCard: {
+    width: '31.5%',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  statLabel: {
+    marginTop: 4,
+    fontSize: 12,
+    color: colors.text,
+    textAlign: 'center',
   },
   footer: {
     marginTop: 12,

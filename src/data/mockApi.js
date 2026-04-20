@@ -22,6 +22,7 @@ const usuarios = [
     email: 'paciente@clinica.com',
     senha: '123456',
     tipo: 'paciente',
+    responsavelEstagiarioId: 2,
   },
   {
     id: 4,
@@ -29,6 +30,7 @@ const usuarios = [
     email: 'diego@clinica.com',
     senha: '123456',
     tipo: 'paciente',
+    responsavelEstagiarioId: 2,
   },
   {
     id: 5,
@@ -36,6 +38,7 @@ const usuarios = [
     email: 'elisa@clinica.com',
     senha: '123456',
     tipo: 'paciente',
+    responsavelEstagiarioId: 2,
   },
 ];
 
@@ -115,6 +118,11 @@ function atualizarStatusPaciente(pacienteId, statusConsulta) {
   }
 }
 
+function getResponsavelPacienteId(pacienteId) {
+  const paciente = usuarios.find((usuario) => usuario.id === Number(pacienteId) && usuario.tipo === 'paciente');
+  return paciente?.responsavelEstagiarioId || null;
+}
+
 function enriquecerConsulta(consulta) {
   const paciente = usuarios.find((usuario) => usuario.id === consulta.pacienteId);
   const estagiario = usuarios.find((usuario) => usuario.id === consulta.estagiarioId);
@@ -150,12 +158,18 @@ export async function cadastrarUsuario(novoUsuario) {
     throw new Error('Esse email já está cadastrado.');
   }
 
+  const estagiarioPadrao = usuarios.find((usuario) => usuario.tipo === 'estagiario');
+
   const usuarioCriado = {
     id: usuarios.length + 1,
     nome: novoUsuario.nome,
     email: novoUsuario.email.toLowerCase().trim(),
     senha: novoUsuario.senha,
     tipo: novoUsuario.tipo,
+    responsavelEstagiarioId:
+      novoUsuario.tipo === 'paciente'
+        ? Number(novoUsuario.responsavelEstagiarioId) || estagiarioPadrao?.id || null
+        : undefined,
   };
 
   usuarios.push(usuarioCriado);
@@ -171,18 +185,27 @@ export async function getEstagiarios(filtroNome = '') {
   return simularResposta(estagiarios);
 }
 
-export async function getPacientes() {
-  return simularResposta(usuarios.filter((usuario) => usuario.tipo === 'paciente'));
+export async function getPacientes(estagiarioId = null) {
+  const pacientes = usuarios.filter((usuario) => usuario.tipo === 'paciente');
+  const filtrados = estagiarioId
+    ? pacientes.filter((paciente) => paciente.responsavelEstagiarioId === Number(estagiarioId))
+    : pacientes;
+
+  return simularResposta(filtrados);
 }
 
-export async function getPacientesComStatus() {
-  const pacientes = usuarios.filter((usuario) => usuario.tipo === 'paciente');
+export async function getPacientesComStatus(estagiarioId = null) {
+  const pacientes = await getPacientes(estagiarioId);
   const resultado = pacientes.map((paciente) => {
     const statusAtual = statusPacientes.find((item) => item.pacienteId === paciente.id);
+    const responsavel = usuarios.find(
+      (usuario) => usuario.id === paciente.responsavelEstagiarioId && usuario.tipo === 'estagiario'
+    );
 
     return {
       ...paciente,
       statusPaciente: statusAtual?.status || 'aguardando check-in',
+      estagiarioResponsavelNome: responsavel?.nome || 'Sem responsável',
     };
   });
 
@@ -272,11 +295,43 @@ export async function criarSala(nome, status) {
   return simularResposta(novaSala);
 }
 
+export async function atualizarStatusSala(salaId, novoStatus) {
+  const statusLimpo = novoStatus.trim().toLowerCase();
+
+  if (!statusSalaValidos.includes(statusLimpo)) {
+    throw new Error('Status inválido para a sala.');
+  }
+
+  const salaExiste = salas.some((sala) => sala.id === Number(salaId));
+  if (!salaExiste) {
+    throw new Error('Sala não encontrada.');
+  }
+
+  salas = salas.map((sala) => (sala.id === Number(salaId) ? { ...sala, status: statusLimpo } : sala));
+  const salaAtualizada = salas.find((sala) => sala.id === Number(salaId));
+
+  return simularResposta(salaAtualizada);
+}
+
 export async function criarConsulta({ pacienteId, estagiarioId, salaId, data, horario, status = 'pendente' }) {
+  const paciente = usuarios.find((usuario) => usuario.id === Number(pacienteId) && usuario.tipo === 'paciente');
+  if (!paciente) {
+    throw new Error('Paciente não encontrado.');
+  }
+
+  const responsavelEstagiarioId = getResponsavelPacienteId(pacienteId);
+  if (!responsavelEstagiarioId) {
+    throw new Error('Paciente sem estagiário responsável.');
+  }
+
+  if (Number(estagiarioId) !== responsavelEstagiarioId) {
+    throw new Error('Esse paciente pertence a outro estagiário responsável.');
+  }
+
   const novaConsulta = {
     id: getProximoId(consultas),
     pacienteId: Number(pacienteId),
-    estagiarioId: Number(estagiarioId),
+    estagiarioId: responsavelEstagiarioId,
     salaId: Number(salaId),
     data: data?.trim() || hoje,
     horario: horario?.trim() || '08:00',
