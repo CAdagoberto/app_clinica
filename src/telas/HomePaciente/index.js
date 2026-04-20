@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import ActionButton from '../../components/ActionButton';
 import ScreenContainer from '../../components/ScreenContainer';
@@ -26,11 +26,13 @@ export default function HomePaciente({ user }) {
 
   async function confirmarConsulta(id) {
     await atualizarStatusConsulta(id, 'confirmado');
+    Alert.alert('Consulta confirmada', 'A consulta foi confirmada com sucesso.');
     carregarConsultas();
   }
 
   async function cancelarConsulta(id) {
-    await atualizarStatusConsulta(id, 'pendente');
+    await atualizarStatusConsulta(id, 'cancelado');
+    Alert.alert('Consulta cancelada', 'A consulta foi cancelada com sucesso.');
     carregarConsultas();
   }
 

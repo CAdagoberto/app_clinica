@@ -3,6 +3,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import HomeEstagiario from '../telas/HomeEstagiario';
 import CheckIn from '../telas/CheckIn';
+import NovaConsulta from '../telas/NovaConsulta';
+import PacientesEstagiario from '../telas/PacientesEstagiario';
+import Salas from '../telas/Salas';
 import { colors } from '../services/theme';
 
 const Tab = createBottomTabNavigator();
@@ -17,6 +20,9 @@ export default function EstagiarioStack({ user, onLogout }) {
         tabBarIcon: ({ color, size }) => {
           const icons = {
             HomeEstagiario: 'calendar-outline',
+            Pacientes: 'people-outline',
+            Salas: 'business-outline',
+            NovaConsulta: 'add-circle-outline',
             CheckIn: 'checkmark-circle-outline',
             Sair: 'log-out-outline',
           };
@@ -26,12 +32,18 @@ export default function EstagiarioStack({ user, onLogout }) {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: '#9ca3af',
         tabBarStyle: { backgroundColor: '#fff' },
+        tabBarLabelStyle: { fontSize: 10 },
         headerStyle: { backgroundColor: colors.primary },
         headerTintColor: '#fff',
       })}
     >
       <Tab.Screen name="HomeEstagiario" options={{ title: 'Minhas consultas' }}>
         {(props) => <HomeEstagiario {...props} user={user} />}
+      </Tab.Screen>
+      <Tab.Screen name="Pacientes" component={PacientesEstagiario} />
+      <Tab.Screen name="Salas" component={Salas} />
+      <Tab.Screen name="NovaConsulta" options={{ title: 'Nova Consulta' }}>
+        {(props) => <NovaConsulta {...props} user={user} />}
       </Tab.Screen>
       <Tab.Screen name="CheckIn" component={CheckIn} options={{ title: 'Check-in' }} />
       <Tab.Screen
