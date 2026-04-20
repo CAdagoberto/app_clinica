@@ -161,7 +161,27 @@ export async function login(email, senha) {
   return simularResposta(usuario);
 }
 
-export async function cadastrarUsuario(novoUsuario) {
+export async function cadastrarUsuario(novoUsuario, contexto = {}) {
+  const atorTipo = contexto.atorTipo;
+  const atorId = Number(contexto.atorId);
+  const tipoNovoUsuario = novoUsuario.tipo;
+
+  if (!atorTipo) {
+    throw new Error('Cadastro público não é permitido.');
+  }
+
+  if (tipoNovoUsuario === 'admin') {
+    throw new Error('Não é permitido cadastrar administrador por esta tela.');
+  }
+
+  if (atorTipo === 'estagiario' && tipoNovoUsuario !== 'paciente') {
+    throw new Error('Estagiário só pode cadastrar pacientes.');
+  }
+
+  if (atorTipo !== 'admin' && atorTipo !== 'estagiario') {
+    throw new Error('Sem permissão para cadastro.');
+  }
+
   const emailExistente = usuarios.some(
     (usuario) => usuario.email.toLowerCase() === novoUsuario.email.toLowerCase().trim()
   );
@@ -171,17 +191,24 @@ export async function cadastrarUsuario(novoUsuario) {
   }
 
   const estagiarioPadrao = usuarios.find((usuario) => usuario.tipo === 'estagiario');
+  const responsavelPacienteId =
+    tipoNovoUsuario === 'paciente'
+      ? atorTipo === 'estagiario'
+        ? atorId
+        : Number(novoUsuario.responsavelEstagiarioId) || estagiarioPadrao?.id || null
+      : undefined;
+
+  if (tipoNovoUsuario === 'paciente' && !responsavelPacienteId) {
+    throw new Error('Paciente precisa de um estagiário responsável.');
+  }
 
   const usuarioCriado = {
     id: usuarios.length + 1,
     nome: novoUsuario.nome,
     email: novoUsuario.email.toLowerCase().trim(),
     senha: novoUsuario.senha,
-    tipo: novoUsuario.tipo,
-    responsavelEstagiarioId:
-      novoUsuario.tipo === 'paciente'
-        ? Number(novoUsuario.responsavelEstagiarioId) || estagiarioPadrao?.id || null
-        : undefined,
+    tipo: tipoNovoUsuario,
+    responsavelEstagiarioId: responsavelPacienteId,
   };
 
   usuarios.push(usuarioCriado);

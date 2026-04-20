@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import ActionButton from '../../components/ActionButton';
 import FadeInView from '../../components/FadeInView';
 import ScreenContainer from '../../components/ScreenContainer';
 import { getPacientesComStatus } from '../../data/mockApi';
@@ -16,7 +17,7 @@ function getStatusStyle(status) {
   return { backgroundColor: '#d1fae5', color: colors.primary };
 }
 
-export default function PacientesEstagiario({ user }) {
+export default function PacientesEstagiario({ user, navigation }) {
   const [pacientes, setPacientes] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -37,6 +38,17 @@ export default function PacientesEstagiario({ user }) {
     <ScreenContainer>
       <FadeInView style={styles.wrapper}>
         <Text style={styles.title}>Pacientes e Status</Text>
+        <View style={styles.newButton}>
+          <ActionButton
+            title="Cadastrar Paciente"
+            onPress={() =>
+              navigation.navigate('CadastroUsuario', {
+                titulo: 'Cadastrar Paciente',
+                tipoInicial: 'paciente',
+              })
+            }
+          />
+        </View>
 
         <FlatList
           data={pacientes}
@@ -83,6 +95,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 2,
+  },
+  newButton: {
+    marginBottom: 12,
   },
   name: {
     fontSize: 16,

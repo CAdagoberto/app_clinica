@@ -1,12 +1,13 @@
 import React, { useCallback, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import ActionButton from '../../components/ActionButton';
 import FadeInView from '../../components/FadeInView';
 import ScreenContainer from '../../components/ScreenContainer';
 import { getEstagiarios } from '../../data/mockApi';
 import { colors } from '../../services/theme';
 
-export default function UsuariosAdmin() {
+export default function UsuariosAdmin({ navigation }) {
   const [filtro, setFiltro] = useState('');
   const [estagiarios, setEstagiarios] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -34,6 +35,12 @@ export default function UsuariosAdmin() {
     <ScreenContainer>
       <FadeInView style={styles.wrapper}>
         <Text style={styles.title}>Estagiários</Text>
+        <View style={styles.newButton}>
+          <ActionButton
+            title="Cadastrar Usuário"
+            onPress={() => navigation.navigate('CadastroUsuario', { titulo: 'Novo Cadastro' })}
+          />
+        </View>
         <TextInput
           value={filtro}
           onChangeText={handleFiltro}
@@ -75,6 +82,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    marginBottom: 12,
+  },
+  newButton: {
     marginBottom: 12,
   },
   card: {

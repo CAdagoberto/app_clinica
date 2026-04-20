@@ -8,6 +8,7 @@ import NovaConsulta from '../telas/NovaConsulta';
 import PacientesEstagiario from '../telas/PacientesEstagiario';
 import Salas from '../telas/Salas';
 import ConsultaDetalhe from '../telas/ConsultaDetalhe';
+import Cadastro from '../telas/Cadastro';
 import { colors } from '../services/theme';
 import { getHeaderIconsOptions } from './headerConfig';
 
@@ -84,6 +85,17 @@ export default function EstagiarioStack({ user, onLogout }) {
         }}
       >
         {(props) => <ConsultaDetalhe {...props} user={user} />}
+      </Stack.Screen>
+      <Stack.Screen
+        name="CadastroUsuario"
+        options={{
+          title: 'Cadastro',
+          headerStyle: { backgroundColor: colors.primary },
+          headerTintColor: '#fff',
+          ...getHeaderIconsOptions(),
+        }}
+      >
+        {(props) => <Cadastro {...props} user={user} />}
       </Stack.Screen>
     </Stack.Navigator>
   );

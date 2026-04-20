@@ -5,7 +5,7 @@ import ScreenContainer from '../../components/ScreenContainer';
 import { login } from '../../data/mockApi';
 import { colors } from '../../services/theme';
 
-export default function Login({ onLogin, navigation }) {
+export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
@@ -56,13 +56,6 @@ export default function Login({ onLogin, navigation }) {
           />
         </View>
 
-        <View style={styles.button}>
-          <ActionButton
-            title="Ir para Cadastro"
-            variant="secondary"
-            onPress={() => navigation.navigate('Cadastro')}
-          />
-        </View>
       </View>
     </ScreenContainer>
   );

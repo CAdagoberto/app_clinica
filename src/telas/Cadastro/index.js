@@ -5,14 +5,27 @@ import ScreenContainer from '../../components/ScreenContainer';
 import { cadastrarUsuario } from '../../data/mockApi';
 import { colors } from '../../services/theme';
 
-const tiposUsuario = ['admin', 'estagiario', 'paciente'];
+const permissoesPorPerfil = {
+  admin: ['estagiario', 'paciente'],
+  estagiario: ['paciente'],
+};
 
-export default function Cadastro({ navigation }) {
+export default function Cadastro({ navigation, user, route }) {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [tipo, setTipo] = useState('paciente');
+  const tiposPermitidos = permissoesPorPerfil[user?.tipo] || [];
+  const tipoInicial = route?.params?.tipoInicial || tiposPermitidos[0] || '';
+  const [tipo, setTipo] = useState(tipoInicial);
   const [loading, setLoading] = useState(false);
+
+  if (!user || tiposPermitidos.length === 0) {
+    return (
+      <ScreenContainer centered>
+        <Text style={styles.semPermissao}>Você não tem permissão para realizar cadastros.</Text>
+      </ScreenContainer>
+    );
+  }
 
   async function handleCadastro() {
     if (!nome || !email || !senha || !tipo) {
@@ -22,7 +35,13 @@ export default function Cadastro({ navigation }) {
 
     try {
       setLoading(true);
-      await cadastrarUsuario({ nome, email, senha, tipo });
+      await cadastrarUsuario(
+        { nome, email, senha, tipo },
+        {
+          atorTipo: user?.tipo,
+          atorId: user?.id,
+        }
+      );
       Alert.alert('Sucesso', 'Usuário cadastrado com sucesso!');
       navigation.goBack();
     } catch (error) {
@@ -34,7 +53,7 @@ export default function Cadastro({ navigation }) {
 
   return (
     <ScreenContainer>
-      <Text style={styles.title}>Cadastro</Text>
+      <Text style={styles.title}>{route?.params?.titulo || 'Cadastro de Usuário'}</Text>
 
       <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome} />
       <TextInput
@@ -52,18 +71,24 @@ export default function Cadastro({ navigation }) {
         onChangeText={setSenha}
       />
 
-      <Text style={styles.label}>Tipo de usuário:</Text>
-      <View style={styles.typeButtons}>
-        {tiposUsuario.map((item) => (
-          <View key={item} style={styles.typeButton}>
-            <ActionButton
-              title={item}
-              variant={tipo === item ? 'primary' : 'secondary'}
-              onPress={() => setTipo(item)}
-            />
+      {tiposPermitidos.length > 1 ? (
+        <>
+          <Text style={styles.label}>Tipo de usuário:</Text>
+          <View style={styles.typeButtons}>
+            {tiposPermitidos.map((item) => (
+              <View key={item} style={styles.typeButton}>
+                <ActionButton
+                  title={item}
+                  variant={tipo === item ? 'primary' : 'secondary'}
+                  onPress={() => setTipo(item)}
+                />
+              </View>
+            ))}
           </View>
-        ))}
-      </View>
+        </>
+      ) : (
+        <Text style={styles.fixedType}>Tipo: paciente</Text>
+      )}
 
       <ActionButton
         title={loading ? 'Salvando...' : 'Cadastrar'}
@@ -100,5 +125,15 @@ const styles = StyleSheet.create({
   },
   typeButton: {
     marginBottom: 8,
+  },
+  fixedType: {
+    marginBottom: 20,
+    color: colors.primary,
+    fontWeight: '700',
+  },
+  semPermissao: {
+    color: colors.text,
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
