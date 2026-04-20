@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ActionButton from '../../components/ActionButton';
 import ScreenContainer from '../../components/ScreenContainer';
 import {
@@ -12,6 +13,7 @@ import {
 import { colors } from '../../services/theme';
 
 export default function ConsultaDetalhe({ route, user }) {
+  const insets = useSafeAreaInsets();
   const { consultaId } = route.params;
   const [consulta, setConsulta] = useState(null);
   const [solicitacoes, setSolicitacoes] = useState([]);
@@ -77,7 +79,11 @@ export default function ConsultaDetalhe({ route, user }) {
 
   return (
     <ScreenContainer>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 24 + insets.bottom }}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.title}>Detalhes da Consulta</Text>
 
         <View style={styles.card}>

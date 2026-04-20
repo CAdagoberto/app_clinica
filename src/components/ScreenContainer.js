@@ -1,11 +1,16 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../services/theme';
 
 export default function ScreenContainer({ children, centered = false }) {
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={[styles.content, centered && styles.contentCentered]}>{children}</View>
+    <SafeAreaView style={styles.safeArea} edges={['left', 'right', 'bottom']}>
+      <View style={[styles.content, { paddingBottom: 16 + insets.bottom }, centered && styles.contentCentered]}>
+        {children}
+      </View>
     </SafeAreaView>
   );
 }

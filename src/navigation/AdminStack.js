@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import HomeAdmin from '../telas/HomeAdmin';
 import CheckIn from '../telas/CheckIn';
@@ -14,23 +15,21 @@ import { getHeaderIconsOptions } from './headerConfig';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+const Drawer = createDrawerNavigator();
 
 function LogoutPlaceholder() {
   return null;
 }
 
-function AdminTabs({ user, onLogout }) {
+function AdminTabs({ user }) {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={({ route, navigation }) => ({
         tabBarIcon: ({ color, size }) => {
           const icons = {
-            HomeAdmin: 'speedometer-outline',
-            Usuarios: 'people-outline',
-            Salas: 'business-outline',
+            HomeAdmin: 'calendar-outline',
             NovaConsulta: 'add-circle-outline',
             CheckIn: 'checkmark-circle-outline',
-            Sair: 'log-out-outline',
           };
 
           return <Ionicons name={icons[route.name]} size={size} color={color} />;
@@ -41,37 +40,54 @@ function AdminTabs({ user, onLogout }) {
         tabBarLabelStyle: { fontSize: 10 },
         headerStyle: { backgroundColor: colors.primary },
         headerTintColor: '#fff',
-        ...getHeaderIconsOptions(),
+        ...getHeaderIconsOptions(navigation),
       })}
     >
-      <Tab.Screen name="HomeAdmin" options={{ title: 'Home' }}>
+      <Tab.Screen name="HomeAdmin" options={{ title: 'Consultas' }}>
         {(props) => <HomeAdmin {...props} user={user} />}
       </Tab.Screen>
-      <Tab.Screen name="Usuarios" component={UsuariosAdmin} options={{ title: 'Usuários' }} />
-      <Tab.Screen name="Salas" component={Salas} />
       <Tab.Screen name="NovaConsulta" options={{ title: 'Nova Consulta' }}>
         {(props) => <NovaConsulta {...props} user={user} />}
       </Tab.Screen>
       <Tab.Screen name="CheckIn" component={CheckIn} options={{ title: 'Check-in' }} />
-      <Tab.Screen
+    </Tab.Navigator>
+  );
+}
+
+function AdminDrawer({ user, onLogout }) {
+  return (
+    <Drawer.Navigator
+      screenOptions={({ navigation }) => ({
+        headerStyle: { backgroundColor: colors.primary },
+        headerTintColor: '#fff',
+        drawerActiveTintColor: colors.primary,
+        ...getHeaderIconsOptions(navigation),
+      })}
+    >
+      <Drawer.Screen name="Painel" options={{ title: 'Consultas', headerShown: false }}>
+        {(props) => <AdminTabs {...props} user={user} />}
+      </Drawer.Screen>
+      <Drawer.Screen name="Usuarios" options={{ title: 'Usuários' }} component={UsuariosAdmin} />
+      <Drawer.Screen name="Salas" component={Salas} />
+      <Drawer.Screen
         name="Sair"
         component={LogoutPlaceholder}
         listeners={{
-          tabPress: (event) => {
+          drawerItemPress: (event) => {
             event.preventDefault();
             onLogout();
           },
         }}
       />
-    </Tab.Navigator>
+    </Drawer.Navigator>
   );
 }
 
 export default function AdminStack({ user, onLogout }) {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="AdminTabs" options={{ headerShown: false }}>
-        {(props) => <AdminTabs {...props} user={user} onLogout={onLogout} />}
+      <Stack.Screen name="AdminDrawer" options={{ headerShown: false }}>
+        {(props) => <AdminDrawer {...props} user={user} onLogout={onLogout} />}
       </Stack.Screen>
       <Stack.Screen
         name="ConsultaDetalhe"
@@ -79,7 +95,6 @@ export default function AdminStack({ user, onLogout }) {
           title: 'Detalhes da Consulta',
           headerStyle: { backgroundColor: colors.primary },
           headerTintColor: '#fff',
-          ...getHeaderIconsOptions(),
         }}
       >
         {(props) => <ConsultaDetalhe {...props} user={user} />}
@@ -90,7 +105,6 @@ export default function AdminStack({ user, onLogout }) {
           title: 'Cadastro',
           headerStyle: { backgroundColor: colors.primary },
           headerTintColor: '#fff',
-          ...getHeaderIconsOptions(),
         }}
       >
         {(props) => <Cadastro {...props} user={user} />}

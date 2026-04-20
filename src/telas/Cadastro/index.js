@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ActionButton from '../../components/ActionButton';
 import ScreenContainer from '../../components/ScreenContainer';
 import { cadastrarUsuario } from '../../data/mockApi';
@@ -11,6 +12,7 @@ const permissoesPorPerfil = {
 };
 
 export default function Cadastro({ navigation, user, route }) {
+  const insets = useSafeAreaInsets();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -53,48 +55,54 @@ export default function Cadastro({ navigation, user, route }) {
 
   return (
     <ScreenContainer>
-      <Text style={styles.title}>{route?.params?.titulo || 'Cadastro de Usuário'}</Text>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 24 + insets.bottom }]}
+      >
+        <Text style={styles.title}>{route?.params?.titulo || 'Cadastro de Usuário'}</Text>
 
-      <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome} />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Senha"
-        secureTextEntry
-        value={senha}
-        onChangeText={setSenha}
-      />
+        <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome} />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Senha"
+          secureTextEntry
+          value={senha}
+          onChangeText={setSenha}
+        />
 
-      {tiposPermitidos.length > 1 ? (
-        <>
-          <Text style={styles.label}>Tipo de usuário:</Text>
-          <View style={styles.typeButtons}>
-            {tiposPermitidos.map((item) => (
-              <View key={item} style={styles.typeButton}>
-                <ActionButton
-                  title={item}
-                  variant={tipo === item ? 'primary' : 'secondary'}
-                  onPress={() => setTipo(item)}
-                />
-              </View>
-            ))}
-          </View>
-        </>
-      ) : (
-        <Text style={styles.fixedType}>Tipo: paciente</Text>
-      )}
+        {tiposPermitidos.length > 1 ? (
+          <>
+            <Text style={styles.label}>Tipo de usuário:</Text>
+            <View style={styles.typeButtons}>
+              {tiposPermitidos.map((item) => (
+                <View key={item} style={styles.typeButton}>
+                  <ActionButton
+                    title={item}
+                    variant={tipo === item ? 'primary' : 'secondary'}
+                    onPress={() => setTipo(item)}
+                  />
+                </View>
+              ))}
+            </View>
+          </>
+        ) : (
+          <Text style={styles.fixedType}>Tipo: paciente</Text>
+        )}
 
-      <ActionButton
-        title={loading ? 'Salvando...' : 'Cadastrar'}
-        onPress={handleCadastro}
-        disabled={loading}
-      />
+        <ActionButton
+          title={loading ? 'Salvando...' : 'Cadastrar'}
+          onPress={handleCadastro}
+          disabled={loading}
+        />
+      </ScrollView>
     </ScreenContainer>
   );
 }
@@ -106,6 +114,9 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginBottom: 16,
     marginTop: 8,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   input: {
     borderWidth: 1,

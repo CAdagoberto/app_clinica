@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
 import HomeEstagiario from '../telas/HomeEstagiario';
 import CheckIn from '../telas/CheckIn';
@@ -14,23 +15,21 @@ import { getHeaderIconsOptions } from './headerConfig';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+const Drawer = createDrawerNavigator();
 
 function LogoutPlaceholder() {
   return null;
 }
 
-function EstagiarioTabs({ user, onLogout }) {
+function EstagiarioTabs({ user }) {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={({ route, navigation }) => ({
         tabBarIcon: ({ color, size }) => {
           const icons = {
             HomeEstagiario: 'calendar-outline',
-            Pacientes: 'people-outline',
-            Salas: 'business-outline',
             NovaConsulta: 'add-circle-outline',
             CheckIn: 'checkmark-circle-outline',
-            Sair: 'log-out-outline',
           };
 
           return <Ionicons name={icons[route.name]} size={size} color={color} />;
@@ -41,39 +40,56 @@ function EstagiarioTabs({ user, onLogout }) {
         tabBarLabelStyle: { fontSize: 10 },
         headerStyle: { backgroundColor: colors.primary },
         headerTintColor: '#fff',
-        ...getHeaderIconsOptions(),
+        ...getHeaderIconsOptions(navigation),
       })}
     >
-      <Tab.Screen name="HomeEstagiario" options={{ title: 'Minhas consultas' }}>
+      <Tab.Screen name="HomeEstagiario" options={{ title: 'Consultas' }}>
         {(props) => <HomeEstagiario {...props} user={user} />}
       </Tab.Screen>
-      <Tab.Screen name="Pacientes">
-        {(props) => <PacientesEstagiario {...props} user={user} />}
-      </Tab.Screen>
-      <Tab.Screen name="Salas" component={Salas} />
       <Tab.Screen name="NovaConsulta" options={{ title: 'Nova Consulta' }}>
         {(props) => <NovaConsulta {...props} user={user} />}
       </Tab.Screen>
       <Tab.Screen name="CheckIn" component={CheckIn} options={{ title: 'Check-in' }} />
-      <Tab.Screen
+    </Tab.Navigator>
+  );
+}
+
+function EstagiarioDrawer({ user, onLogout }) {
+  return (
+    <Drawer.Navigator
+      screenOptions={({ navigation }) => ({
+        headerStyle: { backgroundColor: colors.primary },
+        headerTintColor: '#fff',
+        drawerActiveTintColor: colors.primary,
+        ...getHeaderIconsOptions(navigation),
+      })}
+    >
+      <Drawer.Screen name="Painel" options={{ title: 'Consultas', headerShown: false }}>
+        {(props) => <EstagiarioTabs {...props} user={user} />}
+      </Drawer.Screen>
+      <Drawer.Screen name="Pacientes">
+        {(props) => <PacientesEstagiario {...props} user={user} />}
+      </Drawer.Screen>
+      <Drawer.Screen name="Salas" component={Salas} />
+      <Drawer.Screen
         name="Sair"
         component={LogoutPlaceholder}
         listeners={{
-          tabPress: (event) => {
+          drawerItemPress: (event) => {
             event.preventDefault();
             onLogout();
           },
         }}
       />
-    </Tab.Navigator>
+    </Drawer.Navigator>
   );
 }
 
 export default function EstagiarioStack({ user, onLogout }) {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="EstagiarioTabs" options={{ headerShown: false }}>
-        {(props) => <EstagiarioTabs {...props} user={user} onLogout={onLogout} />}
+      <Stack.Screen name="EstagiarioDrawer" options={{ headerShown: false }}>
+        {(props) => <EstagiarioDrawer {...props} user={user} onLogout={onLogout} />}
       </Stack.Screen>
       <Stack.Screen
         name="ConsultaDetalhe"
@@ -81,7 +97,6 @@ export default function EstagiarioStack({ user, onLogout }) {
           title: 'Detalhes da Consulta',
           headerStyle: { backgroundColor: colors.primary },
           headerTintColor: '#fff',
-          ...getHeaderIconsOptions(),
         }}
       >
         {(props) => <ConsultaDetalhe {...props} user={user} />}
@@ -92,7 +107,6 @@ export default function EstagiarioStack({ user, onLogout }) {
           title: 'Cadastro',
           headerStyle: { backgroundColor: colors.primary },
           headerTintColor: '#fff',
-          ...getHeaderIconsOptions(),
         }}
       >
         {(props) => <Cadastro {...props} user={user} />}

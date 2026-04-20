@@ -18,10 +18,10 @@ function LogoutPlaceholder() {
 function PacienteTabs({ user, onLogout }) {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={({ route, navigation }) => ({
         tabBarIcon: ({ color, size }) => {
           const icons = {
-            HomePaciente: 'person-outline',
+            HomePaciente: 'calendar-outline',
             CheckIn: 'clipboard-outline',
             Sair: 'log-out-outline',
           };
@@ -31,12 +31,13 @@ function PacienteTabs({ user, onLogout }) {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: '#9ca3af',
         tabBarStyle: { backgroundColor: '#fff' },
+        tabBarLabelStyle: { fontSize: 10 },
         headerStyle: { backgroundColor: colors.primary },
         headerTintColor: '#fff',
-        ...getHeaderIconsOptions(),
+        ...getHeaderIconsOptions(navigation),
       })}
     >
-      <Tab.Screen name="HomePaciente" options={{ title: 'Home' }}>
+      <Tab.Screen name="HomePaciente" options={{ title: 'Consultas' }}>
         {(props) => <HomePaciente {...props} user={user} />}
       </Tab.Screen>
       <Tab.Screen name="CheckIn" component={CheckIn} options={{ title: 'Check-in' }} />
@@ -66,7 +67,6 @@ export default function PacienteStack({ user, onLogout }) {
           title: 'Detalhes da Consulta',
           headerStyle: { backgroundColor: colors.primary },
           headerTintColor: '#fff',
-          ...getHeaderIconsOptions(),
         }}
       >
         {(props) => <ConsultaDetalhe {...props} user={user} />}

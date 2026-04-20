@@ -2,9 +2,9 @@ import React from 'react';
 import { Alert, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export function getHeaderIconsOptions() {
+export function getHeaderIconsOptions(navigation) {
   return {
-    headerTitleAlign: 'start',
+    headerTitleAlign: 'center',
     headerTitleStyle: {
       color: '#ffffff',
       fontWeight: '700',
@@ -12,7 +12,11 @@ export function getHeaderIconsOptions() {
     },
     headerLeft: () => (
       <Pressable
-        onPress={() => Alert.alert('Perfil', 'Área de perfil em breve.')}
+        onPress={() =>
+          navigation?.openDrawer
+            ? navigation.openDrawer()
+            : Alert.alert('Perfil', 'Menu lateral indisponível nesta tela.')
+        }
         style={styles.iconButton}
       >
         <Ionicons name="person-circle-outline" size={28} color="#ffffff" />
