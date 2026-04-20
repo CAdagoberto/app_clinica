@@ -87,6 +87,18 @@ let statusPacientes = [
   { pacienteId: 5, status: 'cancelado' },
 ];
 
+let solicitacoesExame = [
+  {
+    id: 1,
+    consultaId: 1,
+    titulo: 'Hemograma completo',
+    descricao: 'Paciente deve realizar hemograma antes da próxima sessão.',
+    solicitadoPorId: 2,
+    anexado: false,
+    arquivoNome: '',
+  },
+];
+
 function simularResposta(data) {
   return new Promise((resolve) => {
     setTimeout(() => resolve(data), 350);
@@ -232,6 +244,15 @@ export async function getConsultasByUsuario(userId) {
   return simularResposta(resultado.map(enriquecerConsulta));
 }
 
+export async function getConsultaById(consultaId) {
+  const consulta = consultas.find((item) => item.id === Number(consultaId));
+  if (!consulta) {
+    throw new Error('Consulta não encontrada.');
+  }
+
+  return simularResposta(enriquecerConsulta(consulta));
+}
+
 export async function getConsultasDisponiveis() {
   const consultasDoDia = consultas
     .filter((consulta) => consulta.data === hoje && consulta.status === 'pendente')
@@ -262,6 +283,58 @@ export async function atualizarStatusConsulta(consultaId, novoStatus) {
     atualizarStatusPaciente(consultaAtualizada.pacienteId, consultaAtualizada.status);
   }
   return simularResposta(enriquecerConsulta(consultaAtualizada));
+}
+
+export async function getSolicitacoesExameByConsulta(consultaId) {
+  const solicitacoes = solicitacoesExame.filter((item) => item.consultaId === Number(consultaId));
+  return simularResposta(solicitacoes);
+}
+
+export async function solicitarExame({ consultaId, titulo, descricao, solicitadoPorId }) {
+  const tituloLimpo = titulo?.trim();
+  const descricaoLimpa = descricao?.trim();
+
+  if (!tituloLimpo || !descricaoLimpa) {
+    throw new Error('Preencha título e descrição do exame.');
+  }
+
+  const consultaExiste = consultas.some((consulta) => consulta.id === Number(consultaId));
+  if (!consultaExiste) {
+    throw new Error('Consulta não encontrada para solicitar exame.');
+  }
+
+  const novaSolicitacao = {
+    id: getProximoId(solicitacoesExame),
+    consultaId: Number(consultaId),
+    titulo: tituloLimpo,
+    descricao: descricaoLimpa,
+    solicitadoPorId: Number(solicitadoPorId),
+    anexado: false,
+    arquivoNome: '',
+  };
+
+  solicitacoesExame = [novaSolicitacao, ...solicitacoesExame];
+  return simularResposta(novaSolicitacao);
+}
+
+export async function anexarExame(solicitacaoId, arquivoNome = 'exame-anexado.pdf') {
+  const existe = solicitacoesExame.some((item) => item.id === Number(solicitacaoId));
+  if (!existe) {
+    throw new Error('Solicitação de exame não encontrada.');
+  }
+
+  solicitacoesExame = solicitacoesExame.map((item) =>
+    item.id === Number(solicitacaoId)
+      ? {
+          ...item,
+          anexado: true,
+          arquivoNome,
+        }
+      : item
+  );
+
+  const solicitacaoAtualizada = solicitacoesExame.find((item) => item.id === Number(solicitacaoId));
+  return simularResposta(solicitacaoAtualizada);
 }
 
 export async function getSalas() {

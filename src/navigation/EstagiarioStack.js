@@ -1,20 +1,24 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import HomeEstagiario from '../telas/HomeEstagiario';
 import CheckIn from '../telas/CheckIn';
 import NovaConsulta from '../telas/NovaConsulta';
 import PacientesEstagiario from '../telas/PacientesEstagiario';
 import Salas from '../telas/Salas';
+import ConsultaDetalhe from '../telas/ConsultaDetalhe';
 import { colors } from '../services/theme';
 import { getHeaderIconsOptions } from './headerConfig';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
 function LogoutPlaceholder() {
   return null;
 }
 
-export default function EstagiarioStack({ user, onLogout }) {
+function EstagiarioTabs({ user, onLogout }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -61,5 +65,26 @@ export default function EstagiarioStack({ user, onLogout }) {
         }}
       />
     </Tab.Navigator>
+  );
+}
+
+export default function EstagiarioStack({ user, onLogout }) {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="EstagiarioTabs" options={{ headerShown: false }}>
+        {(props) => <EstagiarioTabs {...props} user={user} onLogout={onLogout} />}
+      </Stack.Screen>
+      <Stack.Screen
+        name="ConsultaDetalhe"
+        options={{
+          title: 'Detalhes da Consulta',
+          headerStyle: { backgroundColor: colors.primary },
+          headerTintColor: '#fff',
+          ...getHeaderIconsOptions(),
+        }}
+      >
+        {(props) => <ConsultaDetalhe {...props} user={user} />}
+      </Stack.Screen>
+    </Stack.Navigator>
   );
 }

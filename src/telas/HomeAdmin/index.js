@@ -6,7 +6,7 @@ import ConsultaCard from '../../components/ConsultaCard';
 import { getConsultasByUsuario, getUsuarios } from '../../data/mockApi';
 import { colors } from '../../services/theme';
 
-export default function HomeAdmin({ user }) {
+export default function HomeAdmin({ user, navigation }) {
   const [consultas, setConsultas] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -58,7 +58,12 @@ export default function HomeAdmin({ user }) {
             <Text style={styles.sectionTitle}>Consultas gerais</Text>
           </View>
         }
-        renderItem={({ item }) => <ConsultaCard consulta={item} />}
+        renderItem={({ item }) => (
+          <ConsultaCard
+            consulta={item}
+            onPress={() => navigation.navigate('ConsultaDetalhe', { consultaId: item.id })}
+          />
+        )}
         ListFooterComponent={
           <View style={styles.footer}>
             <Text style={styles.sectionTitle}>Usuários</Text>

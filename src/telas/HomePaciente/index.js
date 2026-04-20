@@ -7,7 +7,7 @@ import ConsultaCard from '../../components/ConsultaCard';
 import { atualizarStatusConsulta, getConsultasByUsuario } from '../../data/mockApi';
 import { colors } from '../../services/theme';
 
-export default function HomePaciente({ user }) {
+export default function HomePaciente({ user, navigation }) {
   const [consultas, setConsultas] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -44,7 +44,10 @@ export default function HomePaciente({ user }) {
         keyExtractor={(item) => item.id.toString()}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={carregarConsultas} />}
         renderItem={({ item }) => (
-          <ConsultaCard consulta={item}>
+          <ConsultaCard
+            consulta={item}
+            onPress={() => navigation.navigate('ConsultaDetalhe', { consultaId: item.id })}
+          >
             <View style={styles.buttons}>
               <View style={styles.button}>
                 <ActionButton title="Confirmar" onPress={() => confirmarConsulta(item.id)} />

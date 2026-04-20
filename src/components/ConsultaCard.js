@@ -1,10 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../services/theme';
 
-export default function ConsultaCard({ consulta, children }) {
+export default function ConsultaCard({ consulta, children, onPress }) {
+  const Container = onPress ? Pressable : View;
+
   return (
-    <View style={styles.card}>
+    <Container style={styles.card} onPress={onPress}>
       <Text style={styles.title}>Consulta #{consulta.id}</Text>
       <Text style={styles.info}>Paciente: {consulta.pacienteNome}</Text>
       <Text style={styles.info}>Estagiário: {consulta.estagiarioNome}</Text>
@@ -14,7 +16,7 @@ export default function ConsultaCard({ consulta, children }) {
       </Text>
       <Text style={styles.status}>Status: {consulta.status}</Text>
       {children}
-    </View>
+    </Container>
   );
 }
 

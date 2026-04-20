@@ -4,7 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 
 export function getHeaderIconsOptions() {
   return {
-    headerTitle: '',
+    headerTitleAlign: 'start',
+    headerTitleStyle: {
+      color: '#ffffff',
+      fontWeight: '700',
+      fontSize: 18,
+    },
     headerLeft: () => (
       <Pressable
         onPress={() => Alert.alert('Perfil', 'Área de perfil em breve.')}

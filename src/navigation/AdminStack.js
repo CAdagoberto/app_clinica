@@ -1,20 +1,24 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import HomeAdmin from '../telas/HomeAdmin';
 import CheckIn from '../telas/CheckIn';
 import NovaConsulta from '../telas/NovaConsulta';
 import Salas from '../telas/Salas';
 import UsuariosAdmin from '../telas/UsuariosAdmin';
+import ConsultaDetalhe from '../telas/ConsultaDetalhe';
 import { colors } from '../services/theme';
 import { getHeaderIconsOptions } from './headerConfig';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
 function LogoutPlaceholder() {
   return null;
 }
 
-export default function AdminStack({ user, onLogout }) {
+function AdminTabs({ user, onLogout }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -59,5 +63,26 @@ export default function AdminStack({ user, onLogout }) {
         }}
       />
     </Tab.Navigator>
+  );
+}
+
+export default function AdminStack({ user, onLogout }) {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="AdminTabs" options={{ headerShown: false }}>
+        {(props) => <AdminTabs {...props} user={user} onLogout={onLogout} />}
+      </Stack.Screen>
+      <Stack.Screen
+        name="ConsultaDetalhe"
+        options={{
+          title: 'Detalhes da Consulta',
+          headerStyle: { backgroundColor: colors.primary },
+          headerTintColor: '#fff',
+          ...getHeaderIconsOptions(),
+        }}
+      >
+        {(props) => <ConsultaDetalhe {...props} user={user} />}
+      </Stack.Screen>
+    </Stack.Navigator>
   );
 }

@@ -6,7 +6,7 @@ import ConsultaCard from '../../components/ConsultaCard';
 import { getConsultasByUsuario } from '../../data/mockApi';
 import { colors } from '../../services/theme';
 
-export default function HomeEstagiario({ user }) {
+export default function HomeEstagiario({ user, navigation }) {
   const [consultas, setConsultas] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -49,7 +49,10 @@ export default function HomeEstagiario({ user }) {
         keyExtractor={(item) => item.id.toString()}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={carregarConsultas} />}
         renderItem={({ item }) => (
-          <ConsultaCard consulta={item}>
+          <ConsultaCard
+            consulta={item}
+            onPress={() => navigation.navigate('ConsultaDetalhe', { consultaId: item.id })}
+          >
             <View style={styles.row}>
               <Text style={styles.detail}>Paciente: {item.pacienteNome}</Text>
               <Text style={styles.detail}>Horário: {item.horario}</Text>
