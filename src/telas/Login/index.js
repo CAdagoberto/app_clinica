@@ -35,6 +35,7 @@ export default function Login({ onLogin }) {
         <TextInput
           style={styles.input}
           placeholder="Email"
+          placeholderTextColor={colors.muted}
           autoCapitalize="none"
           value={email}
           onChangeText={setEmail}
@@ -43,6 +44,7 @@ export default function Login({ onLogin }) {
         <TextInput
           style={styles.input}
           placeholder="Senha"
+          placeholderTextColor={colors.muted}
           secureTextEntry
           value={senha}
           onChangeText={setSenha}

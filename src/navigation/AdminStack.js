@@ -8,8 +8,13 @@ import CheckIn from '../telas/CheckIn';
 import NovaConsulta from '../telas/NovaConsulta';
 import Salas from '../telas/Salas';
 import UsuariosAdmin from '../telas/UsuariosAdmin';
+import Estagiarios from '../telas/Estagiarios';
+import AgendaEstagiario from '../telas/AgendaEstagiario';
 import ConsultaDetalhe from '../telas/ConsultaDetalhe';
 import Cadastro from '../telas/Cadastro';
+import Notificacoes from '../telas/Notificacoes';
+import Avaliacoes from '../telas/Avaliacoes';
+import Encaminhamentos from '../telas/Encaminhamentos';
 import { colors } from '../services/theme';
 import { getHeaderIconsOptions } from './headerConfig';
 
@@ -29,7 +34,7 @@ function AdminTabs({ user }) {
           const icons = {
             HomeAdmin: 'calendar-outline',
             NovaConsulta: 'add-circle-outline',
-            CheckIn: 'checkmark-circle-outline',
+            CheckIn: 'business-outline',
           };
 
           return <Ionicons name={icons[route.name]} size={size} color={color} />;
@@ -43,13 +48,13 @@ function AdminTabs({ user }) {
         ...getHeaderIconsOptions(navigation),
       })}
     >
-      <Tab.Screen name="HomeAdmin" options={{ title: 'Consultas' }}>
+      <Tab.Screen name="HomeAdmin" options={{ title: 'Painel' }}>
         {(props) => <HomeAdmin {...props} user={user} />}
       </Tab.Screen>
-      <Tab.Screen name="NovaConsulta" options={{ title: 'Nova Consulta' }}>
+      <Tab.Screen name="NovaConsulta" options={{ title: 'Agendar' }}>
         {(props) => <NovaConsulta {...props} user={user} />}
       </Tab.Screen>
-      <Tab.Screen name="CheckIn" component={CheckIn} options={{ title: 'Check-in' }} />
+      <Tab.Screen name="CheckIn" component={CheckIn} options={{ title: 'Recepção' }} />
     </Tab.Navigator>
   );
 }
@@ -64,11 +69,23 @@ function AdminDrawer({ user, onLogout }) {
         ...getHeaderIconsOptions(navigation),
       })}
     >
-      <Drawer.Screen name="Painel" options={{ title: 'Consultas', headerShown: false }}>
+      <Drawer.Screen name="Painel" options={{ title: 'Início', headerShown: false }}>
         {(props) => <AdminTabs {...props} user={user} />}
       </Drawer.Screen>
-      <Drawer.Screen name="Usuarios" options={{ title: 'Usuários' }} component={UsuariosAdmin} />
-      <Drawer.Screen name="Salas" component={Salas} />
+      <Drawer.Screen name="Estagiarios" options={{ title: 'Estagiários' }} component={Estagiarios} />
+      <Drawer.Screen name="Usuarios" options={{ title: 'Usuários' }}>
+        {(props) => <UsuariosAdmin {...props} />}
+      </Drawer.Screen>
+      <Drawer.Screen name="Salas" options={{ title: 'Ambientes' }} component={Salas} />
+      <Drawer.Screen name="Encaminhamentos" options={{ title: 'Encaminhamentos' }}>
+        {(props) => <Encaminhamentos {...props} user={user} />}
+      </Drawer.Screen>
+      <Drawer.Screen name="Avaliacoes" options={{ title: 'Avaliações' }}>
+        {(props) => <Avaliacoes {...props} user={user} />}
+      </Drawer.Screen>
+      <Drawer.Screen name="Notificacoes" options={{ title: 'Notificações' }}>
+        {(props) => <Notificacoes {...props} user={user} />}
+      </Drawer.Screen>
       <Drawer.Screen
         name="Sair"
         component={LogoutPlaceholder}
@@ -92,7 +109,7 @@ export default function AdminStack({ user, onLogout }) {
       <Stack.Screen
         name="ConsultaDetalhe"
         options={{
-          title: 'Detalhes da Consulta',
+          title: 'Consulta',
           headerStyle: { backgroundColor: colors.primary },
           headerTintColor: '#fff',
         }}
@@ -108,6 +125,25 @@ export default function AdminStack({ user, onLogout }) {
         }}
       >
         {(props) => <Cadastro {...props} user={user} />}
+      </Stack.Screen>
+      <Stack.Screen
+        name="AgendaEstagiario"
+        options={{
+          title: 'Agenda',
+          headerStyle: { backgroundColor: colors.primary },
+          headerTintColor: '#fff',
+        }}
+        component={AgendaEstagiario}
+      />
+      <Stack.Screen
+        name="Notificacoes"
+        options={{
+          title: 'Notificações',
+          headerStyle: { backgroundColor: colors.primary },
+          headerTintColor: '#fff',
+        }}
+      >
+        {(props) => <Notificacoes {...props} user={user} />}
       </Stack.Screen>
     </Stack.Navigator>
   );

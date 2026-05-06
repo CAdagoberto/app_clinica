@@ -8,6 +8,9 @@ export default function ConsultaCard({ consulta, children, onPress }) {
   return (
     <Container style={styles.card} onPress={onPress}>
       <Text style={styles.title}>Consulta #{consulta.id}</Text>
+      {consulta.sessaoNumero != null && consulta.pacoteId != null ? (
+        <Text style={styles.sessao}>Sessão {consulta.sessaoNumero} de 10</Text>
+      ) : null}
       <Text style={styles.info}>Paciente: {consulta.pacienteNome}</Text>
       <Text style={styles.info}>Estagiário: {consulta.estagiarioNome}</Text>
       <Text style={styles.info}>Sala: {consulta.salaNome}</Text>
@@ -38,6 +41,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: colors.primary,
+    marginBottom: 6,
+  },
+  sessao: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.muted,
     marginBottom: 6,
   },
   info: {

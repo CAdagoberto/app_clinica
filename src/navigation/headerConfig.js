@@ -3,6 +3,18 @@ import { Alert, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export function getHeaderIconsOptions(navigation) {
+  function abrirNotificacoes() {
+    if (navigation?.navigate) {
+      try {
+        navigation.navigate('Notificacoes');
+        return;
+      } catch {
+        /* ignore */
+      }
+    }
+    Alert.alert('Notificações', 'Abra o menu lateral para acessar notificações.');
+  }
+
   return {
     headerTitleAlign: 'center',
     headerTitleStyle: {
@@ -15,18 +27,15 @@ export function getHeaderIconsOptions(navigation) {
         onPress={() =>
           navigation?.openDrawer
             ? navigation.openDrawer()
-            : Alert.alert('Perfil', 'Menu lateral indisponível nesta tela.')
+            : Alert.alert('Menu', 'Menu lateral indisponível nesta tela.')
         }
         style={styles.iconButton}
       >
-        <Ionicons name="person-circle-outline" size={28} color="#ffffff" />
+        <Ionicons name="menu" size={28} color="#ffffff" />
       </Pressable>
     ),
     headerRight: () => (
-      <Pressable
-        onPress={() => Alert.alert('Notificações', 'Você não tem novas notificações.')}
-        style={styles.iconButton}
-      >
+      <Pressable onPress={abrirNotificacoes} style={styles.iconButton}>
         <Ionicons name="notifications-outline" size={24} color="#ffffff" />
       </Pressable>
     ),

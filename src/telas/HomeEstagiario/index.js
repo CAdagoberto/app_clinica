@@ -23,8 +23,8 @@ export default function HomeEstagiario({ user, navigation }) {
     }, [carregarConsultas])
   );
 
-  const examesPendentes = consultas.filter((consulta) => consulta.status === 'pendente').length;
-  const examesConfirmados = consultas.filter((consulta) => consulta.status === 'confirmado').length;
+  const consultasPendentes = consultas.filter((consulta) => consulta.status === 'pendente').length;
+  const consultasConfirmadas = consultas.filter((consulta) => consulta.status === 'confirmado').length;
   const totalPacientes = new Set(consultas.map((consulta) => consulta.pacienteId)).size;
 
   return (
@@ -32,12 +32,12 @@ export default function HomeEstagiario({ user, navigation }) {
       <Text style={styles.title}>Consultas de Hoje</Text>
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{examesPendentes}</Text>
-          <Text style={styles.statLabel}>Exames pendentes</Text>
+          <Text style={styles.statNumber}>{consultasPendentes}</Text>
+          <Text style={styles.statLabel}>Consultas pendentes</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{examesConfirmados}</Text>
-          <Text style={styles.statLabel}>Exames confirmados</Text>
+          <Text style={styles.statNumber}>{consultasConfirmadas}</Text>
+          <Text style={styles.statLabel}>Consultas confirmadas</Text>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>{totalPacientes}</Text>

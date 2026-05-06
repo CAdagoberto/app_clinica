@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import ActionButton from '../../components/ActionButton';
 import FadeInView from '../../components/FadeInView';
@@ -11,7 +11,7 @@ function getStatusStyle(status) {
   if (status === 'cancelado') {
     return { backgroundColor: '#fee2e2', color: '#b91c1c' };
   }
-  if (status === 'exame pendente') {
+  if (status === 'sessão confirmada') {
     return { backgroundColor: '#fef9c3', color: '#854d0e' };
   }
   return { backgroundColor: '#d1fae5', color: colors.primary };
@@ -37,7 +37,8 @@ export default function PacientesEstagiario({ user, navigation }) {
   return (
     <ScreenContainer>
       <FadeInView style={styles.wrapper}>
-        <Text style={styles.title}>Pacientes e Status</Text>
+        <Text style={styles.title}>Pacientes</Text>
+        <Text style={styles.subtitle}>Toque no paciente para abrir o prontuário e o histórico de consultas.</Text>
         <View style={styles.newButton}>
           <ActionButton
             title="Cadastrar Paciente"
@@ -57,13 +58,17 @@ export default function PacientesEstagiario({ user, navigation }) {
           renderItem={({ item }) => {
             const statusStyle = getStatusStyle(item.statusPaciente);
             return (
-              <View style={styles.card}>
+              <Pressable
+                style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+                onPress={() => navigation.navigate('ProntuarioPaciente', { pacienteId: item.id })}
+              >
                 <Text style={styles.name}>{item.nome}</Text>
+                <Text style={styles.info}>Prontuário: {item.prontuario || '—'}</Text>
                 <Text style={styles.info}>{item.email}</Text>
                 <View style={[styles.badge, { backgroundColor: statusStyle.backgroundColor }]}>
                   <Text style={[styles.badgeText, { color: statusStyle.color }]}>{item.statusPaciente}</Text>
                 </View>
-              </View>
+              </Pressable>
             );
           }}
           ListEmptyComponent={<Text style={styles.empty}>Nenhum paciente encontrado.</Text>}
@@ -81,6 +86,11 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: colors.primary,
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 13,
+    color: colors.muted,
     marginBottom: 12,
   },
   card: {
@@ -95,6 +105,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 2,
+  },
+  cardPressed: {
+    opacity: 0.88,
   },
   newButton: {
     marginBottom: 12,

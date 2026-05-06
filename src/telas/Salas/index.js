@@ -1,14 +1,19 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import ActionButton from '../../components/ActionButton';
 import FadeInView from '../../components/FadeInView';
 import ScreenContainer from '../../components/ScreenContainer';
-import { atualizarStatusSala, criarSala, getSalas } from '../../data/mockApi';
+import ActionButton from '../../components/ActionButton';
+import { atualizarStatusSala, getSalas } from '../../data/mockApi';
 import { colors } from '../../services/theme';
 
 const statusOptions = ['disponivel', 'ocupada', 'em reforma'];
+
+const tipoLabels = {
+  atendimento: 'Atendimento',
+  recepcao: 'Recepção',
+  descanso: 'Descanso',
+};
 
 function getStatusStyle(status) {
   if (status === 'ocupada') {
@@ -22,18 +27,11 @@ function getStatusStyle(status) {
 
 export default function Salas() {
   const [salas, setSalas] = useState([]);
-  const [nomeSala, setNomeSala] = useState('');
-  const [statusSala, setStatusSala] = useState('disponivel');
   const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [mostrarForm, setMostrarForm] = useState(false);
-  const [mostrarTodas, setMostrarTodas] = useState(false);
+  const [mostrarTodas, setMostrarTodas] = useState(true);
 
   const salasFiltradas = useMemo(() => {
-    if (mostrarTodas) {
-      return salas;
-    }
-
+    if (mostrarTodas) return salas;
     return salas.filter((sala) => sala.status === 'disponivel');
   }, [mostrarTodas, salas]);
 
@@ -50,26 +48,10 @@ export default function Salas() {
     }, [carregarSalas])
   );
 
-  async function handleCriarSala() {
-    try {
-      setLoading(true);
-      await criarSala(nomeSala, statusSala);
-      setNomeSala('');
-      setStatusSala('disponivel');
-      setMostrarForm(false);
-      Alert.alert('Sucesso', 'Sala criada com sucesso.');
-      carregarSalas();
-    } catch (error) {
-      Alert.alert('Erro', error.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   function abrirAlteracaoStatus(sala) {
     Alert.alert(
-      `Alterar status - ${sala.nome}`,
-      'Selecione o novo status da sala:',
+      `Alterar status — ${sala.nome}`,
+      'Selecione o novo status:',
       [
         ...statusOptions.map((status) => ({
           text: status,
@@ -83,7 +65,7 @@ export default function Salas() {
   async function handleAtualizarStatusSala(salaId, novoStatus) {
     try {
       await atualizarStatusSala(salaId, novoStatus);
-      Alert.alert('Sucesso', 'Status da sala atualizado.');
+      Alert.alert('Sucesso', 'Status atualizado.');
       carregarSalas();
     } catch (error) {
       Alert.alert('Erro', error.message);
@@ -93,51 +75,22 @@ export default function Salas() {
   return (
     <ScreenContainer>
       <FadeInView style={styles.wrapper}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Salas</Text>
-          <Pressable style={styles.addButton} onPress={() => setMostrarForm((valor) => !valor)}>
-            <Ionicons name="add" size={20} color="#ffffff" />
-          </Pressable>
-        </View>
+        <Text style={styles.title}>Ambientes da clínica</Text>
+        <Text style={styles.intro}>
+          Estrutura fixa: 6 consultórios de atendimento, recepção e sala de descanso. O status indica se o ambiente
+          está livre para uso.
+        </Text>
+        <Text style={styles.nota}>
+          Consultórios 1 e 2: uso restrito — terça 13h–16h; quarta e sexta 13h–18h (agendamento validado no sistema).
+        </Text>
 
         <View style={styles.filterRow}>
           <ActionButton
-            title={mostrarTodas ? 'Mostrar só disponíveis' : 'Mostrar todas'}
+            title={mostrarTodas ? 'Só disponíveis' : 'Ver todos'}
             variant="secondary"
-            onPress={() => setMostrarTodas((valor) => !valor)}
+            onPress={() => setMostrarTodas((v) => !v)}
           />
         </View>
-
-        {mostrarForm ? (
-          <View style={styles.formCard}>
-            <Text style={styles.formTitle}>Nova Sala</Text>
-            <TextInput
-              value={nomeSala}
-              onChangeText={setNomeSala}
-              style={styles.input}
-              placeholder="Nome da sala"
-            />
-
-            <Text style={styles.label}>Status:</Text>
-            <View style={styles.statusGrid}>
-              {statusOptions.map((status) => (
-                <View key={status} style={styles.statusButton}>
-                  <ActionButton
-                    title={status}
-                    variant={statusSala === status ? 'primary' : 'secondary'}
-                    onPress={() => setStatusSala(status)}
-                  />
-                </View>
-              ))}
-            </View>
-
-            <ActionButton
-              title={loading ? 'Salvando...' : 'Criar Sala'}
-              onPress={handleCriarSala}
-              disabled={loading}
-            />
-          </View>
-        ) : null}
 
         <FlatList
           data={salasFiltradas}
@@ -147,14 +100,20 @@ export default function Salas() {
             const statusStyle = getStatusStyle(item.status);
             return (
               <Pressable style={styles.card} onPress={() => abrirAlteracaoStatus(item)}>
-                <Text style={styles.salaNome}>{item.nome}</Text>
-                <View style={[styles.badge, { backgroundColor: statusStyle.backgroundColor }]}>
-                  <Text style={[styles.badgeText, { color: statusStyle.color }]}>{item.status}</Text>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.salaNome}>{item.nome}</Text>
+                  <View style={[styles.badge, { backgroundColor: statusStyle.backgroundColor }]}>
+                    <Text style={[styles.badgeText, { color: statusStyle.color }]}>{item.status}</Text>
+                  </View>
                 </View>
+                <Text style={styles.tipo}>{tipoLabels[item.tipo] || item.tipo}</Text>
+                {item.restricaoConsultorio ? (
+                  <Text style={styles.restricao}>Horário restrito para agendamento</Text>
+                ) : null}
               </Pressable>
             );
           }}
-          ListEmptyComponent={<Text style={styles.empty}>Nenhuma sala disponível no momento.</Text>}
+          ListEmptyComponent={<Text style={styles.empty}>Nenhum ambiente na lista.</Text>}
         />
       </FadeInView>
     </ScreenContainer>
@@ -169,56 +128,24 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: colors.primary,
+    marginBottom: 8,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  intro: {
+    fontSize: 13,
+    color: colors.muted,
+    marginBottom: 8,
+    lineHeight: 18,
+  },
+  nota: {
+    fontSize: 12,
+    color: colors.text,
+    backgroundColor: colors.surface,
+    padding: 10,
+    borderRadius: 12,
     marginBottom: 12,
-  },
-  addButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   filterRow: {
     marginBottom: 10,
-  },
-  formCard: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 16,
-    backgroundColor: '#ffffff',
-    padding: 14,
-    marginBottom: 12,
-  },
-  formTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.primary,
-    marginBottom: 10,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 10,
-  },
-  label: {
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 8,
-  },
-  statusGrid: {
-    marginBottom: 10,
-  },
-  statusButton: {
-    marginBottom: 8,
   },
   card: {
     borderWidth: 1,
@@ -227,6 +154,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     padding: 14,
     marginBottom: 10,
+  },
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -234,7 +163,20 @@ const styles = StyleSheet.create({
   salaNome: {
     fontWeight: '700',
     color: colors.primary,
-    fontSize: 15,
+    fontSize: 16,
+    flex: 1,
+    marginRight: 8,
+  },
+  tipo: {
+    marginTop: 6,
+    fontSize: 13,
+    color: colors.muted,
+  },
+  restricao: {
+    marginTop: 4,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#92400e',
   },
   badge: {
     borderRadius: 999,

@@ -32,7 +32,7 @@ export default function CheckIn() {
 
   return (
     <ScreenContainer>
-      <Text style={styles.title}>Check-in do Dia</Text>
+      <Text style={styles.title}>Recepção — chegadas do dia</Text>
       <FlatList
         data={consultas}
         keyExtractor={(item) => item.id.toString()}

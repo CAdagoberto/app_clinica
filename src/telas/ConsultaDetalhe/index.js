@@ -4,30 +4,20 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ActionButton from '../../components/ActionButton';
 import ScreenContainer from '../../components/ScreenContainer';
-import {
-  anexarExame,
-  getConsultaById,
-  getSolicitacoesExameByConsulta,
-  solicitarExame,
-} from '../../data/mockApi';
+import { DURACAO_SESSAO_MINUTOS, getConsultaById, getRelatorioConsulta, salvarRelatorioConsulta } from '../../data/mockApi';
 import { colors } from '../../services/theme';
 
 export default function ConsultaDetalhe({ route, user }) {
   const insets = useSafeAreaInsets();
   const { consultaId } = route.params;
   const [consulta, setConsulta] = useState(null);
-  const [solicitacoes, setSolicitacoes] = useState([]);
-  const [tituloExame, setTituloExame] = useState('');
-  const [descricaoExame, setDescricaoExame] = useState('');
+  const [relatorio, setRelatorio] = useState('');
   const [loading, setLoading] = useState(false);
 
   const carregarDados = useCallback(async () => {
-    const [consultaData, solicitacoesData] = await Promise.all([
-      getConsultaById(consultaId),
-      getSolicitacoesExameByConsulta(consultaId),
-    ]);
+    const [consultaData, rel] = await Promise.all([getConsultaById(consultaId), getRelatorioConsulta(consultaId)]);
     setConsulta(consultaData);
-    setSolicitacoes(solicitacoesData);
+    setRelatorio(rel.texto || '');
   }, [consultaId]);
 
   useFocusEffect(
@@ -36,33 +26,15 @@ export default function ConsultaDetalhe({ route, user }) {
     }, [carregarDados])
   );
 
-  async function handleSolicitarExame() {
+  async function handleSalvarRelatorio() {
     try {
       setLoading(true);
-      await solicitarExame({
-        consultaId,
-        titulo: tituloExame,
-        descricao: descricaoExame,
-        solicitadoPorId: user.id,
-      });
-      setTituloExame('');
-      setDescricaoExame('');
-      Alert.alert('Sucesso', 'Solicitação de exame criada.');
-      carregarDados();
+      await salvarRelatorioConsulta({ consultaId, texto: relatorio, autorId: user.id });
+      Alert.alert('Sucesso', 'Relatório de atendimento salvo.');
     } catch (error) {
       Alert.alert('Erro', error.message);
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleAnexarExame(solicitacaoId) {
-    try {
-      await anexarExame(solicitacaoId, `exame-consulta-${consultaId}.pdf`);
-      Alert.alert('Sucesso', 'Exame anexado com sucesso.');
-      carregarDados();
-    } catch (error) {
-      Alert.alert('Erro', error.message);
     }
   }
 
@@ -74,8 +46,11 @@ export default function ConsultaDetalhe({ route, user }) {
     );
   }
 
-  const podeSolicitarExame = user.tipo === 'admin' || user.tipo === 'estagiario';
-  const podeAnexarExame = user.tipo === 'paciente';
+  const podeEditarRelatorio = user.tipo === 'admin' || user.tipo === 'estagiario';
+  const sessaoLabel =
+    consulta.sessaoNumero != null && consulta.pacoteId != null
+      ? `Sessão ${consulta.sessaoNumero} de 10 (pacote)`
+      : 'Sessão avulsa';
 
   return (
     <ScreenContainer>
@@ -84,61 +59,49 @@ export default function ConsultaDetalhe({ route, user }) {
         contentContainerStyle={{ paddingBottom: 24 + insets.bottom }}
         keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.title}>Detalhes da Consulta</Text>
+        <Text style={styles.title}>Detalhes da consulta</Text>
 
         <View style={styles.card}>
           <Text style={styles.subtitle}>Consulta #{consulta.id}</Text>
+          <Text style={styles.info}>{sessaoLabel}</Text>
+          <Text style={styles.info}>Duração prevista: {consulta.duracaoMinutos || DURACAO_SESSAO_MINUTOS} min</Text>
           <Text style={styles.info}>Paciente: {consulta.pacienteNome}</Text>
           <Text style={styles.info}>Estagiário: {consulta.estagiarioNome}</Text>
-          <Text style={styles.info}>Sala: {consulta.salaNome}</Text>
-          <Text style={styles.info}>Data: {consulta.data}</Text>
-          <Text style={styles.info}>Horário: {consulta.horario}</Text>
+          <Text style={styles.info}>Consultório: {consulta.salaNome}</Text>
+          <Text style={styles.info}>
+            Data: {consulta.data} — Horário: {consulta.horario}
+          </Text>
           <Text style={styles.status}>Status: {consulta.status}</Text>
         </View>
 
-        {podeSolicitarExame ? (
-          <View style={styles.card}>
-            <Text style={styles.subtitle}>Solicitar Exame</Text>
-            <TextInput
-              value={tituloExame}
-              onChangeText={setTituloExame}
-              placeholder="Título do exame"
-              style={styles.input}
-            />
-            <TextInput
-              value={descricaoExame}
-              onChangeText={setDescricaoExame}
-              placeholder="Descrição do exame"
-              style={[styles.input, styles.textArea]}
-              multiline
-            />
-            <ActionButton
-              title={loading ? 'Salvando...' : 'Solicitar Exame'}
-              onPress={handleSolicitarExame}
-              disabled={loading}
-            />
-          </View>
-        ) : null}
-
         <View style={styles.card}>
-          <Text style={styles.subtitle}>Exames Solicitados</Text>
-          {solicitacoes.length === 0 ? (
-            <Text style={styles.empty}>Nenhum exame solicitado para esta consulta.</Text>
+          <Text style={styles.subtitle}>Relatório de atendimento</Text>
+          <Text style={styles.helper}>
+            Registro da sessão conforme fluxo da clínica (após o atendimento).
+          </Text>
+          {podeEditarRelatorio ? (
+            <>
+              <TextInput
+                value={relatorio}
+                onChangeText={setRelatorio}
+                placeholder="Descreva o que foi trabalhado na sessão, observações clínicas relevantes..."
+                placeholderTextColor={colors.muted}
+                style={[styles.input, styles.textArea]}
+                multiline
+              />
+              <ActionButton
+                title={loading ? 'Salvando...' : 'Salvar relatório'}
+                onPress={handleSalvarRelatorio}
+                disabled={loading}
+              />
+            </>
+          ) : relatorio ? (
+            <View style={styles.relatorioLeitura}>
+              <Text style={styles.relatorioTitulo}>Registro da equipe</Text>
+              <Text style={styles.relatorioCorpo}>{relatorio}</Text>
+            </View>
           ) : (
-            solicitacoes.map((item) => (
-              <View key={item.id} style={styles.exameItem}>
-                <Text style={styles.exameTitulo}>{item.titulo}</Text>
-                <Text style={styles.info}>{item.descricao}</Text>
-                <Text style={styles.info}>
-                  Situação: {item.anexado ? `Anexado (${item.arquivoNome})` : 'Aguardando anexo'}
-                </Text>
-                {podeAnexarExame && !item.anexado ? (
-                  <View style={styles.anexarButton}>
-                    <ActionButton title="Anexar Exame" onPress={() => handleAnexarExame(item.id)} />
-                  </View>
-                ) : null}
-              </View>
-            ))
+            <Text style={styles.muted}>Nenhum relatório registrado para esta sessão.</Text>
           )}
         </View>
       </ScrollView>
@@ -167,6 +130,11 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginBottom: 8,
   },
+  helper: {
+    fontSize: 13,
+    color: colors.muted,
+    marginBottom: 10,
+  },
   info: {
     color: colors.text,
     marginBottom: 4,
@@ -183,25 +151,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 10,
+    backgroundColor: '#fff',
   },
   textArea: {
-    minHeight: 90,
+    minHeight: 120,
     textAlignVertical: 'top',
   },
-  exameItem: {
+  muted: {
+    color: colors.muted,
+    fontSize: 13,
+  },
+  relatorioLeitura: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 12,
-    padding: 10,
-    marginBottom: 8,
   },
-  exameTitulo: {
+  relatorioTitulo: {
     fontWeight: '700',
     color: colors.primary,
-    marginBottom: 4,
+    marginBottom: 8,
+    fontSize: 14,
   },
-  anexarButton: {
-    marginTop: 8,
+  relatorioCorpo: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 20,
   },
   empty: {
     color: colors.muted,
