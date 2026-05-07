@@ -15,6 +15,7 @@ import Avaliacoes from '../telas/Avaliacoes';
 import Encaminhamentos from '../telas/Encaminhamentos';
 import ProntuarioPaciente from '../telas/ProntuarioPaciente';
 import PresencaEstagiario from '../telas/PresencaEstagiario';
+import ConsultasPacienteEstagiario from '../telas/ConsultasPacienteEstagiario';
 import { colors } from '../services/theme';
 import { getHeaderIconsOptions } from './headerConfig';
 
@@ -108,6 +109,15 @@ export default function EstagiarioStack({ user, onLogout }) {
       <Stack.Screen name="EstagiarioDrawer" options={{ headerShown: false }}>
         {(props) => <EstagiarioDrawer {...props} user={user} onLogout={onLogout} />}
       </Stack.Screen>
+      <Stack.Screen
+        name="ConsultasPacienteEstagiario"
+        options={{
+          title: 'Consultas do paciente',
+          headerStyle: { backgroundColor: colors.primary },
+          headerTintColor: '#fff',
+        }}
+        component={ConsultasPacienteEstagiario}
+      />
       <Stack.Screen
         name="ConsultaDetalhe"
         options={{

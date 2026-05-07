@@ -6,21 +6,24 @@ import ScreenContainer from '../../components/ScreenContainer';
 import { getConsultasByUsuario } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
-export default function AgendaEstagiario({ route, navigation }) {
-  const { estagiarioId, estagiarioNome } = route.params;
+export default function ConsultasPacienteEstagiario({ route, navigation }) {
+  const { pacienteId, pacienteNome, estagiarioId } = route.params;
   const [consultas, setConsultas] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   useLayoutEffect(() => {
-    navigation.setOptions({ title: estagiarioNome });
-  }, [navigation, estagiarioNome]);
+    navigation.setOptions({ title: pacienteNome || 'Consultas do paciente' });
+  }, [navigation, pacienteNome]);
 
   const carregarConsultas = useCallback(async () => {
     setRefreshing(true);
     const dados = await getConsultasByUsuario(estagiarioId);
-    setConsultas(dados);
+    const filtradas = dados
+      .filter((consulta) => consulta.pacienteId === pacienteId)
+      .sort((a, b) => (a.data + a.horario).localeCompare(b.data + b.horario));
+    setConsultas(filtradas);
     setRefreshing(false);
-  }, [estagiarioId]);
+  }, [estagiarioId, pacienteId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -36,19 +39,14 @@ export default function AgendaEstagiario({ route, navigation }) {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={carregarConsultas} />}
         contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
-          <ConsultaCard
-            consulta={item}
-            onPress={() => navigation.navigate('ConsultaDetalhe', { consultaId: item.id })}
-          />
+          <ConsultaCard consulta={item} onPress={() => navigation.navigate('ConsultaDetalhe', { consultaId: item.id })} />
         )}
         ListHeaderComponent={
           <Text style={styles.subtitle}>
-            {consultas.length} consulta{consultas.length !== 1 ? 's' : ''} na agenda
+            {consultas.length} consulta{consultas.length !== 1 ? 's' : ''} para {pacienteNome}
           </Text>
         }
-        ListEmptyComponent={
-          <Text style={styles.vazio}>Nenhuma consulta encontrada para este estagiário.</Text>
-        }
+        ListEmptyComponent={<Text style={styles.empty}>Nenhuma consulta encontrada para este paciente.</Text>}
       />
     </ScreenContainer>
   );
@@ -63,10 +61,9 @@ const styles = StyleSheet.create({
     color: colors.muted,
     marginBottom: 12,
   },
-  vazio: {
-    marginTop: 24,
-    textAlign: 'center',
+  empty: {
     color: colors.muted,
-    fontSize: 15,
+    marginTop: 20,
+    textAlign: 'center',
   },
 });

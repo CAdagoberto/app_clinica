@@ -34,6 +34,7 @@
       "expo-font"
     ],
     "extra": {
+      "apiUrl": "https://visaoderuastore.com.br",
       "eas": {
         "projectId": "0580d498-1390-4cda-b9b7-e20cad4192db"
       }

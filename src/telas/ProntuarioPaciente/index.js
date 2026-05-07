@@ -3,7 +3,7 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'rea
 import { useFocusEffect } from '@react-navigation/native';
 import ScreenContainer from '../../components/ScreenContainer';
 import ConsultaCard from '../../components/ConsultaCard';
-import { getProntuarioPaciente } from '../../data/mockApi';
+import { getProntuarioPaciente } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 export default function ProntuarioPaciente({ route, navigation }) {

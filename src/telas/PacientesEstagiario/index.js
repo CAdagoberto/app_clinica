@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import ActionButton from '../../components/ActionButton';
 import FadeInView from '../../components/FadeInView';
 import ScreenContainer from '../../components/ScreenContainer';
-import { getPacientesComStatus } from '../../data/mockApi';
+import { getPacientesComStatus } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 function getStatusStyle(status) {

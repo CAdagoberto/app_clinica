@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
 import ActionButton from '../../components/ActionButton';
 import ScreenContainer from '../../components/ScreenContainer';
-import { login } from '../../data/mockApi';
+import { login } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 export default function Login({ onLogin }) {

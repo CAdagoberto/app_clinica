@@ -12,7 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import FadeInView from '../../components/FadeInView';
 import ScreenContainer from '../../components/ScreenContainer';
-import { getEstagiariosComConsultas } from '../../data/mockApi';
+import { getEstagiariosComConsultas } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 const FILTROS = [

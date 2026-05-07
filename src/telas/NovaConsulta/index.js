@@ -13,7 +13,7 @@ import {
   getEstagiarios,
   getPacientes,
   getSalasAtendimento,
-} from '../../data/mockApi';
+} from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 export default function NovaConsulta({ user }) {

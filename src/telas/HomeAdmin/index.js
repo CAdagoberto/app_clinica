@@ -3,7 +3,7 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'rea
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import ScreenContainer from '../../components/ScreenContainer';
-import { getAlertasAdmin, getEstagiariosComConsultas, getStatsAdmin } from '../../data/mockApi';
+import { getAlertasAdmin, getEstagiariosComConsultas, getStatsAdmin } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 const CARGA_CONFIG = {

@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import FadeInView from '../../components/FadeInView';
 import ScreenContainer from '../../components/ScreenContainer';
 import ActionButton from '../../components/ActionButton';
-import { atualizarStatusSala, getSalas } from '../../data/mockApi';
+import { atualizarStatusSala, getSalas } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 const statusOptions = ['disponivel', 'ocupada', 'em reforma'];

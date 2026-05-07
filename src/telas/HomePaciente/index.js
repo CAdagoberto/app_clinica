@@ -4,12 +4,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import ActionButton from '../../components/ActionButton';
 import ScreenContainer from '../../components/ScreenContainer';
 import ConsultaCard from '../../components/ConsultaCard';
-import { atualizarStatusConsulta, getConsultasByUsuario } from '../../data/mockApi';
+import { atualizarStatusConsulta, getConsultasByUsuario } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 export default function HomePaciente({ user, navigation }) {
   const [consultas, setConsultas] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [atualizandoId, setAtualizandoId] = useState(null);
 
   const carregarConsultas = useCallback(async () => {
     setRefreshing(true);
@@ -25,15 +26,29 @@ export default function HomePaciente({ user, navigation }) {
   );
 
   async function confirmarConsulta(id) {
-    await atualizarStatusConsulta(id, 'confirmado');
-    Alert.alert('Consulta confirmada', 'A consulta foi confirmada com sucesso.');
-    carregarConsultas();
+    try {
+      setAtualizandoId(id);
+      await atualizarStatusConsulta(id, 'confirmado');
+      Alert.alert('Consulta confirmada', 'A consulta foi confirmada com sucesso.');
+      await carregarConsultas();
+    } catch (error) {
+      Alert.alert('Erro', error.message || 'Não foi possível confirmar a consulta.');
+    } finally {
+      setAtualizandoId(null);
+    }
   }
 
   async function cancelarConsulta(id) {
-    await atualizarStatusConsulta(id, 'cancelado');
-    Alert.alert('Consulta cancelada', 'A consulta foi cancelada com sucesso.');
-    carregarConsultas();
+    try {
+      setAtualizandoId(id);
+      await atualizarStatusConsulta(id, 'cancelado');
+      Alert.alert('Consulta cancelada', 'A consulta foi cancelada com sucesso.');
+      await carregarConsultas();
+    } catch (error) {
+      Alert.alert('Erro', error.message || 'Não foi possível cancelar a consulta.');
+    } finally {
+      setAtualizandoId(null);
+    }
   }
 
   return (
@@ -48,14 +63,29 @@ export default function HomePaciente({ user, navigation }) {
             consulta={item}
             onPress={() => navigation.navigate('ConsultaDetalhe', { consultaId: item.id })}
           >
-            <View style={styles.buttons}>
-              <View style={styles.button}>
-                <ActionButton title="Confirmar" onPress={() => confirmarConsulta(item.id)} />
+            {item.status === 'pendente' ? (
+              <View style={styles.buttons}>
+                <View style={styles.button}>
+                  <ActionButton
+                    title={atualizandoId === item.id ? 'Confirmando...' : 'Confirmar'}
+                    onPress={() => confirmarConsulta(item.id)}
+                    disabled={atualizandoId === item.id}
+                  />
+                </View>
+                <View style={styles.buttonNoMargin}>
+                  <ActionButton
+                    title={atualizandoId === item.id ? 'Cancelando...' : 'Cancelar'}
+                    variant="danger"
+                    onPress={() => cancelarConsulta(item.id)}
+                    disabled={atualizandoId === item.id}
+                  />
+                </View>
               </View>
-              <View style={styles.buttonNoMargin}>
-                <ActionButton title="Cancelar" variant="danger" onPress={() => cancelarConsulta(item.id)} />
-              </View>
-            </View>
+            ) : item.status === 'confirmado' ? (
+              <Text style={styles.helper}>Consulta já confirmada.</Text>
+            ) : (
+              <Text style={styles.helper}>Consulta cancelada.</Text>
+            )}
           </ConsultaCard>
         )}
         ListEmptyComponent={<Text style={styles.empty}>Nenhuma consulta encontrada.</Text>}
@@ -86,5 +116,11 @@ const styles = StyleSheet.create({
     color: colors.muted,
     marginTop: 20,
     textAlign: 'center',
+  },
+  helper: {
+    marginTop: 10,
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: '600',
   },
 });

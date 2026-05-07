@@ -9,7 +9,7 @@ import {
   getEncaminhamentosDoEstagiario,
   getEncaminhamentosPorPaciente,
   getEncaminhamentosTodos,
-} from '../../data/mockApi';
+} from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 export default function Encaminhamentos({ route, user }) {

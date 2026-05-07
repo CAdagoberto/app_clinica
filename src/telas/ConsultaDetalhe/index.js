@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ActionButton from '../../components/ActionButton';
 import ScreenContainer from '../../components/ScreenContainer';
-import { DURACAO_SESSAO_MINUTOS, getConsultaById, getRelatorioConsulta, salvarRelatorioConsulta } from '../../data/mockApi';
+import { DURACAO_SESSAO_MINUTOS, getConsultaById, getRelatorioConsulta, salvarRelatorioConsulta } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 export default function ConsultaDetalhe({ route, user }) {

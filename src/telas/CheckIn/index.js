@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import ActionButton from '../../components/ActionButton';
 import ScreenContainer from '../../components/ScreenContainer';
 import ConsultaCard from '../../components/ConsultaCard';
-import { fazerCheckIn, getConsultasDisponiveis } from '../../data/mockApi';
+import { fazerCheckIn, getConsultasDisponiveis } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 export default function CheckIn() {

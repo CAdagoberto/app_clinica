@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import ActionButton from '../../components/ActionButton';
 import FadeInView from '../../components/FadeInView';
 import ScreenContainer from '../../components/ScreenContainer';
-import { getUsuarios } from '../../data/mockApi';
+import { getUsuarios } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 export default function UsuariosAdmin({ navigation }) {

@@ -3,7 +3,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ActionButton from '../../components/ActionButton';
 import ScreenContainer from '../../components/ScreenContainer';
-import { cadastrarUsuario } from '../../data/mockApi';
+import { cadastrarUsuario } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 const permissoesPorPerfil = {

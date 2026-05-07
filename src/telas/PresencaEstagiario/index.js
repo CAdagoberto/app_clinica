@@ -3,7 +3,7 @@ import { Alert, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-n
 import { useFocusEffect } from '@react-navigation/native';
 import ActionButton from '../../components/ActionButton';
 import ScreenContainer from '../../components/ScreenContainer';
-import { getPresencasEstagiario, registrarPresencaEstagiario } from '../../data/mockApi';
+import { getPresencasEstagiario, registrarPresencaEstagiario } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 export default function PresencaEstagiario({ user }) {

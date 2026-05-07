@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import ScreenContainer from '../../components/ScreenContainer';
-import { getNotificacoes, marcarNotificacaoLida } from '../../data/mockApi';
+import { getNotificacoes, marcarNotificacaoLida } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
 
 export default function Notificacoes({ user }) {
