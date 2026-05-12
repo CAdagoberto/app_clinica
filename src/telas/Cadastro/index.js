@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ActionButton from '../../components/ActionButton';
+import AppTextInput from '../../components/AppTextInput';
 import ScreenContainer from '../../components/ScreenContainer';
 import { cadastrarUsuario } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
@@ -105,14 +106,14 @@ export default function Cadastro({ navigation, user, route }) {
         )}
 
         <Text style={styles.section}>Dados de acesso</Text>
-        <TextInput
+        <AppTextInput
           style={styles.input}
           placeholder="Nome completo"
           placeholderTextColor={colors.muted}
           value={nome}
           onChangeText={setNome}
         />
-        <TextInput
+        <AppTextInput
           style={styles.input}
           placeholder="Email"
           placeholderTextColor={colors.muted}
@@ -120,7 +121,7 @@ export default function Cadastro({ navigation, user, route }) {
           value={email}
           onChangeText={setEmail}
         />
-        <TextInput
+        <AppTextInput
           style={styles.input}
           placeholder="Senha"
           placeholderTextColor={colors.muted}
@@ -132,7 +133,7 @@ export default function Cadastro({ navigation, user, route }) {
         {tipo === 'paciente' ? (
           <>
             <Text style={styles.section}>Dados do paciente (obrigatórios)</Text>
-            <TextInput
+            <AppTextInput
               style={styles.input}
               placeholder="Telefone"
               placeholderTextColor={colors.muted}
@@ -140,14 +141,14 @@ export default function Cadastro({ navigation, user, route }) {
               onChangeText={setTelefone}
               keyboardType="phone-pad"
             />
-            <TextInput
+            <AppTextInput
               style={styles.input}
               placeholder="Região / localização"
               placeholderTextColor={colors.muted}
               value={regiao}
               onChangeText={setRegiao}
             />
-            <TextInput
+            <AppTextInput
               style={styles.input}
               placeholder="Número de prontuário"
               placeholderTextColor={colors.muted}
@@ -163,14 +164,14 @@ export default function Cadastro({ navigation, user, route }) {
             {menorDeIdade ? (
               <>
                 <Text style={styles.helper}>Responsável legal (obrigatório)</Text>
-                <TextInput
+                <AppTextInput
                   style={styles.input}
                   placeholder="Nome do responsável legal"
                   placeholderTextColor={colors.muted}
                   value={responsavelLegalNome}
                   onChangeText={setResponsavelLegalNome}
                 />
-                <TextInput
+                <AppTextInput
                   style={styles.input}
                   placeholder="Telefone do responsável"
                   placeholderTextColor={colors.muted}
@@ -186,7 +187,7 @@ export default function Cadastro({ navigation, user, route }) {
         {tipo === 'estagiario' ? (
           <>
             <Text style={styles.section}>Dados do estagiário</Text>
-            <TextInput
+            <AppTextInput
               style={styles.input}
               placeholder="Número de matrícula"
               placeholderTextColor={colors.muted}

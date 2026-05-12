@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ActionButton from '../../components/ActionButton';
+import AppTextInput from '../../components/AppTextInput';
 import ScreenContainer from '../../components/ScreenContainer';
 import { getAvaliacoes, registrarAvaliacao } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
@@ -59,7 +60,7 @@ export default function Avaliacoes({ user }) {
         {user.tipo === 'paciente' ? (
           <View style={styles.card}>
             <Text style={styles.label}>Nota (1 a 5)</Text>
-            <TextInput
+            <AppTextInput
               style={styles.input}
               value={nota}
               onChangeText={setNota}
@@ -68,7 +69,7 @@ export default function Avaliacoes({ user }) {
               placeholderTextColor={colors.muted}
             />
             <Text style={styles.label}>Comentário</Text>
-            <TextInput
+            <AppTextInput
               style={[styles.input, styles.area]}
               value={comentario}
               onChangeText={setComentario}

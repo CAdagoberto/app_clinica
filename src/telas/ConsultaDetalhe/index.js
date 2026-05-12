@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ActionButton from '../../components/ActionButton';
+import AppTextInput from '../../components/AppTextInput';
 import ScreenContainer from '../../components/ScreenContainer';
 import { DURACAO_SESSAO_MINUTOS, getConsultaById, getRelatorioConsulta, salvarRelatorioConsulta } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
@@ -81,7 +82,7 @@ export default function ConsultaDetalhe({ route, user }) {
           </Text>
           {podeEditarRelatorio ? (
             <>
-              <TextInput
+              <AppTextInput
                 value={relatorio}
                 onChangeText={setRelatorio}
                 placeholder="Descreva o que foi trabalhado na sessão, observações clínicas relevantes..."

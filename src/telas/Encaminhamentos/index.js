@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ActionButton from '../../components/ActionButton';
+import AppTextInput from '../../components/AppTextInput';
 import ScreenContainer from '../../components/ScreenContainer';
 import {
   criarEncaminhamento,
@@ -100,7 +101,7 @@ export default function Encaminhamentos({ route, user }) {
               ))}
             </View>
             <Text style={styles.label}>Destino</Text>
-            <TextInput
+            <AppTextInput
               style={styles.input}
               placeholder="Nome do estagiário ou serviço externo"
               placeholderTextColor={colors.muted}
@@ -108,7 +109,7 @@ export default function Encaminhamentos({ route, user }) {
               onChangeText={setDestino}
             />
             <Text style={styles.label}>Observação</Text>
-            <TextInput
+            <AppTextInput
               style={[styles.input, styles.area]}
               placeholder="Detalhes relevantes"
               placeholderTextColor={colors.muted}

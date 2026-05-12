@@ -5,11 +5,11 @@ import {
   RefreshControl,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import AppTextInput from '../../components/AppTextInput';
 import FadeInView from '../../components/FadeInView';
 import ScreenContainer from '../../components/ScreenContainer';
 import { getEstagiariosComConsultas } from '../../data/clinicaApi';
@@ -146,7 +146,7 @@ export default function Estagiarios({ navigation }) {
                 </View>
               )}
 
-              <TextInput
+              <AppTextInput
                 style={styles.busca}
                 placeholder="Pesquisar por nome"
                 placeholderTextColor={colors.muted}

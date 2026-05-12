@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import ActionButton from '../../components/ActionButton';
+import AppTextInput from '../../components/AppTextInput';
 import FadeInView from '../../components/FadeInView';
 import ScreenContainer from '../../components/ScreenContainer';
 import { getUsuarios } from '../../data/clinicaApi';
@@ -42,7 +43,7 @@ export default function UsuariosAdmin({ navigation }) {
             onPress={() => navigation.navigate('CadastroUsuario', { titulo: 'Novo usuário' })}
           />
         </View>
-        <TextInput
+        <AppTextInput
           value={filtro}
           onChangeText={setFiltro}
           placeholder="Buscar por nome ou email"

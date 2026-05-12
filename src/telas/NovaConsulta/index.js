@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import ActionButton from '../../components/ActionButton';
+import AppTextInput from '../../components/AppTextInput';
 import FadeInView from '../../components/FadeInView';
 import ScreenContainer from '../../components/ScreenContainer';
 import {
@@ -202,10 +203,10 @@ export default function NovaConsulta({ user }) {
 
           <View style={styles.card}>
             <Text style={styles.label}>{modo === 'pacote' ? 'Data da 1ª sessão (AAAA-MM-DD)' : 'Data (AAAA-MM-DD)'}</Text>
-            <TextInput value={data} onChangeText={setData} style={styles.input} placeholderTextColor={colors.muted} />
+            <AppTextInput value={data} onChangeText={setData} style={styles.input} placeholderTextColor={colors.muted} />
 
             <Text style={[styles.label, styles.marginTop]}>Horário (HH:MM)</Text>
-            <TextInput value={horario} onChangeText={setHorario} style={styles.input} placeholderTextColor={colors.muted} />
+            <AppTextInput value={horario} onChangeText={setHorario} style={styles.input} placeholderTextColor={colors.muted} />
           </View>
 
           {modo === 'pacote' ? (

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import ActionButton from '../../components/ActionButton';
+import AppTextInput from '../../components/AppTextInput';
 import ScreenContainer from '../../components/ScreenContainer';
 import { login } from '../../data/clinicaApi';
 import { colors } from '../../services/theme';
@@ -28,11 +29,11 @@ export default function Login({ onLogin }) {
   }
 
   return (
-    <ScreenContainer centered>
+    <ScreenContainer centered insetBottom>
       <Text style={styles.title}>Clínica Psicológica</Text>
 
       <View style={styles.form}>
-        <TextInput
+        <AppTextInput
           style={styles.input}
           placeholder="Email"
           placeholderTextColor={colors.muted}
@@ -41,7 +42,7 @@ export default function Login({ onLogin }) {
           onChangeText={setEmail}
         />
 
-        <TextInput
+        <AppTextInput
           style={styles.input}
           placeholder="Senha"
           placeholderTextColor={colors.muted}
