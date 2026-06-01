@@ -1,11 +1,12 @@
 import React from 'react';
 import { TextInput } from 'react-native';
-import { colors } from '../services/theme';
+import { colors, typography } from '../services/theme';
+import { themeStyles } from '../services/themeStyles';
 
-export default function AppTextInput({ style, placeholderTextColor = colors.muted, ...props }) {
+export default function AppTextInput({ style, placeholderTextColor = colors.placeholder, ...props }) {
   return (
     <TextInput
-      style={[{ color: colors.text }, style]}
+      style={[themeStyles.input, style]}
       placeholderTextColor={placeholderTextColor}
       {...props}
     />

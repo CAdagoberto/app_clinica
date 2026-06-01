@@ -1,7 +1,6 @@
-/** Referência de "hoje" e datas no mock (alinhado ao fluxo da clínica). */
-export const DATA_REFERENCIA = '2026-04-20';
+import { DATA_REFERENCIA, DURACAO_SESSAO_MINUTOS } from '../config/clinicaConstants';
 
-export const DURACAO_SESSAO_MINUTOS = 50;
+export { DATA_REFERENCIA, DURACAO_SESSAO_MINUTOS };
 
 const statusSalaValidos = ['disponivel', 'ocupada', 'em reforma'];
 

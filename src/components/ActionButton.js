@@ -1,9 +1,10 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { colors } from '../services/theme';
+import { colors, radii, shadows, typography } from '../services/theme';
 
 export default function ActionButton({ title, onPress, variant = 'primary', disabled = false }) {
   const isSecondary = variant === 'secondary';
+  const isOutline = variant === 'outline';
   const isDanger = variant === 'danger';
 
   return (
@@ -13,12 +14,22 @@ export default function ActionButton({ title, onPress, variant = 'primary', disa
       style={({ pressed }) => [
         styles.base,
         isSecondary && styles.secondary,
+        isOutline && styles.outline,
         isDanger && styles.danger,
         disabled && styles.disabled,
-        pressed && styles.pressed,
+        pressed && !disabled && styles.pressed,
+        variant === 'primary' && !disabled && shadows.button,
       ]}
     >
-      <Text style={[styles.text, isSecondary && styles.secondaryText]}>{title}</Text>
+      <Text
+        style={[
+          styles.text,
+          (isSecondary || isOutline) && styles.secondaryText,
+          isDanger && styles.dangerText,
+        ]}
+      >
+        {title}
+      </Text>
     </Pressable>
   );
 }
@@ -26,12 +37,16 @@ export default function ActionButton({ title, onPress, variant = 'primary', disa
 const styles = StyleSheet.create({
   base: {
     backgroundColor: colors.primary,
-    paddingVertical: 12,
-    borderRadius: 14,
+    paddingVertical: 14,
+    borderRadius: radii.button,
     alignItems: 'center',
   },
   secondary: {
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.navActiveBg,
+    borderWidth: 0,
+  },
+  outline: {
+    backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: colors.primary,
   },
@@ -40,16 +55,20 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#ffffff',
-    fontWeight: '700',
+    fontFamily: typography.fontBold,
     fontSize: 15,
   },
   secondaryText: {
     color: colors.primary,
   },
+  dangerText: {
+    color: '#ffffff',
+  },
   disabled: {
-    opacity: 0.6,
+    opacity: 0.55,
+    backgroundColor: colors.borderNeutral,
   },
   pressed: {
-    opacity: 0.85,
+    opacity: 0.88,
   },
 });

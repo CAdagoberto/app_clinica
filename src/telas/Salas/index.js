@@ -4,8 +4,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import FadeInView from '../../components/FadeInView';
 import ScreenContainer from '../../components/ScreenContainer';
 import ActionButton from '../../components/ActionButton';
+import SectionTitle from '../../components/SectionTitle';
+import { SalaStatusBadge } from '../../components/StatusBadge';
 import { atualizarStatusSala, getSalas } from '../../data/clinicaApi';
-import { colors } from '../../services/theme';
+import { colors, typography } from '../../services/theme';
+import { themeStyles } from '../../services/themeStyles';
 
 const statusOptions = ['disponivel', 'ocupada', 'em reforma'];
 
@@ -14,16 +17,6 @@ const tipoLabels = {
   recepcao: 'Recepção',
   descanso: 'Descanso',
 };
-
-function getStatusStyle(status) {
-  if (status === 'ocupada') {
-    return { backgroundColor: '#fee2e2', color: '#b91c1c' };
-  }
-  if (status === 'em reforma') {
-    return { backgroundColor: '#fef9c3', color: '#854d0e' };
-  }
-  return { backgroundColor: '#d1fae5', color: colors.primary };
-}
 
 export default function Salas() {
   const [salas, setSalas] = useState([]);
@@ -75,8 +68,8 @@ export default function Salas() {
   return (
     <ScreenContainer>
       <FadeInView style={styles.wrapper}>
-        <Text style={styles.title}>Ambientes da clínica</Text>
-        <Text style={styles.intro}>
+        <SectionTitle variant="primary">Ambientes da clínica</SectionTitle>
+        <Text style={themeStyles.sub}>
           Estrutura fixa: 6 consultórios de atendimento, recepção e sala de descanso. O status indica se o ambiente
           está livre para uso.
         </Text>
@@ -96,24 +89,19 @@ export default function Salas() {
           data={salasFiltradas}
           keyExtractor={(item) => item.id.toString()}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={carregarSalas} />}
-          renderItem={({ item }) => {
-            const statusStyle = getStatusStyle(item.status);
-            return (
+          renderItem={({ item }) => (
               <Pressable style={styles.card} onPress={() => abrirAlteracaoStatus(item)}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.salaNome}>{item.nome}</Text>
-                  <View style={[styles.badge, { backgroundColor: statusStyle.backgroundColor }]}>
-                    <Text style={[styles.badgeText, { color: statusStyle.color }]}>{item.status}</Text>
-                  </View>
+                  <SalaStatusBadge status={item.status} />
                 </View>
                 <Text style={styles.tipo}>{tipoLabels[item.tipo] || item.tipo}</Text>
                 {item.restricaoConsultorio ? (
                   <Text style={styles.restricao}>Horário restrito para agendamento</Text>
                 ) : null}
               </Pressable>
-            );
-          }}
-          ListEmptyComponent={<Text style={styles.empty}>Nenhum ambiente na lista.</Text>}
+          )}
+          ListEmptyComponent={<Text style={themeStyles.empty}>Nenhum ambiente na lista.</Text>}
         />
       </FadeInView>
     </ScreenContainer>
@@ -123,18 +111,6 @@ export default function Salas() {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: colors.primary,
-    marginBottom: 8,
-  },
-  intro: {
-    fontSize: 13,
-    color: colors.muted,
-    marginBottom: 8,
-    lineHeight: 18,
   },
   nota: {
     fontSize: 12,
@@ -161,8 +137,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   salaNome: {
-    fontWeight: '700',
-    color: colors.primary,
+    fontFamily: typography.fontBold,
+    color: colors.text,
     fontSize: 16,
     flex: 1,
     marginRight: 8,
@@ -177,19 +153,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#92400e',
-  },
-  badge: {
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  badgeText: {
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  empty: {
-    marginTop: 10,
-    color: colors.muted,
-    textAlign: 'center',
   },
 });

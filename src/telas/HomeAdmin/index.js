@@ -2,15 +2,23 @@ import React, { useCallback, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import SectionTitle from '../../components/SectionTitle';
 import ScreenContainer from '../../components/ScreenContainer';
 import { getAlertasAdmin, getEstagiariosComConsultas, getStatsAdmin } from '../../data/clinicaApi';
-import { colors } from '../../services/theme';
+import { colors, typography } from '../../services/theme';
+import { themeStyles } from '../../services/themeStyles';
 
 const CARGA_CONFIG = {
-  sem_consultas: { label: 'Sem consultas', bg: '#fef9c3', text: '#854d0e' },
-  equilibrado: { label: 'Regular', bg: '#d1fae5', text: '#065f46' },
-  sobrecarregado: { label: 'Agenda cheia', bg: '#fee2e2', text: '#b91c1c' },
+  sem_consultas: { label: 'Sem consultas', bg: colors.warningBg, text: colors.warningText },
+  equilibrado: { label: 'Regular', bg: colors.successBg, text: colors.successText },
+  sobrecarregado: { label: 'Agenda cheia', bg: colors.dangerBg, text: colors.dangerText },
 };
+
+const KPI_STYLES = [
+  { icon: 'time-outline', bg: colors.admin.kpiBlueBg, color: colors.admin.kpiBlueText },
+  { icon: 'checkmark-circle-outline', bg: colors.admin.kpiGreenBg, color: colors.admin.kpiGreenText },
+  { icon: 'people-outline', bg: colors.admin.kpiPurpleBg, color: colors.admin.kpiPurpleText },
+];
 
 function EstagiarioCard({ item, onPress }) {
   const carga = CARGA_CONFIG[item.carga];
@@ -64,24 +72,9 @@ export default function HomeAdmin({ navigation }) {
   const temAlertas = alertas.pendentesHoje > 0 || alertas.estagiariosSemConsultas > 0;
 
   const kpis = [
-    {
-      key: 'pendentes',
-      label: 'Pendentes',
-      value: stats.pendentes,
-      onPress: () => navigation.navigate('Estagiarios'),
-    },
-    {
-      key: 'confirmados',
-      label: 'Confirmados',
-      value: stats.confirmados,
-      onPress: () => navigation.navigate('Estagiarios'),
-    },
-    {
-      key: 'estagiarios',
-      label: 'Estagiários',
-      value: stats.totalEstagiarios,
-      onPress: () => navigation.navigate('Estagiarios'),
-    },
+    { key: 'pendentes', label: 'Pendentes', value: stats.pendentes },
+    { key: 'confirmados', label: 'Confirmados', value: stats.confirmados },
+    { key: 'estagiarios', label: 'Estagiários', value: stats.totalEstagiarios },
   ];
 
   return (
@@ -102,19 +95,18 @@ export default function HomeAdmin({ navigation }) {
             }
           />
         )}
-        ListEmptyComponent={
-          <Text style={styles.vazio}>Nenhum estagiário cadastrado.</Text>
-        }
+        ListEmptyComponent={<Text style={themeStyles.empty}>Nenhum estagiário cadastrado.</Text>}
         ListHeaderComponent={
           <View>
-            <Text style={styles.title}>Painel Admin</Text>
+            <Text style={styles.pageTitle}>Visão Geral</Text>
+            <Text style={themeStyles.sub}>Painel administrativo — Clínica Psiquiátrica</Text>
 
             {temAlertas && (
-              <View style={styles.alertBox}>
+              <View style={themeStyles.alertSupervisor}>
                 {alertas.pendentesHoje > 0 && (
                   <View style={styles.alertRow}>
-                    <Ionicons name="alert-circle" size={16} color="#92400e" />
-                    <Text style={styles.alertText}>
+                    <Ionicons name="alert-circle" size={16} color={colors.warningText} />
+                    <Text style={themeStyles.alertText}>
                       {alertas.pendentesHoje} consulta{alertas.pendentesHoje > 1 ? 's' : ''} pendente
                       {alertas.pendentesHoje > 1 ? 's' : ''} hoje
                     </Text>
@@ -122,8 +114,8 @@ export default function HomeAdmin({ navigation }) {
                 )}
                 {alertas.estagiariosSemConsultas > 0 && (
                   <View style={styles.alertRow}>
-                    <Ionicons name="person-remove-outline" size={16} color="#92400e" />
-                    <Text style={styles.alertText}>
+                    <Ionicons name="person-remove-outline" size={16} color={colors.warningText} />
+                    <Text style={themeStyles.alertText}>
                       {alertas.estagiariosSemConsultas} estagiário
                       {alertas.estagiariosSemConsultas > 1 ? 's' : ''} sem consultas
                     </Text>
@@ -132,20 +124,26 @@ export default function HomeAdmin({ navigation }) {
               </View>
             )}
 
-            <View style={styles.kpiRow}>
-              {kpis.map((kpi) => (
-                <Pressable
-                  key={kpi.key}
-                  style={({ pressed }) => [styles.kpiCard, pressed && styles.kpiCardPressed]}
-                  onPress={kpi.onPress}
-                >
-                  <Text style={styles.kpiValue}>{kpi.value}</Text>
-                  <Text style={styles.kpiLabel}>{kpi.label}</Text>
-                </Pressable>
-              ))}
+            <View style={themeStyles.kpiRow}>
+              {kpis.map((kpi, index) => {
+                const style = KPI_STYLES[index];
+                return (
+                  <Pressable
+                    key={kpi.key}
+                    style={({ pressed }) => [themeStyles.kpiCard, pressed && styles.kpiPressed]}
+                    onPress={() => navigation.navigate('Estagiarios')}
+                  >
+                    <View style={[styles.kpiIcon, { backgroundColor: style.bg }]}>
+                      <Ionicons name={style.icon} size={20} color={style.color} />
+                    </View>
+                    <Text style={themeStyles.kpiValue}>{kpi.value}</Text>
+                    <Text style={themeStyles.kpiLabel}>{kpi.label}</Text>
+                  </Pressable>
+                );
+              })}
             </View>
 
-            <Text style={styles.sectionTitle}>Estagiários</Text>
+            <SectionTitle variant="primary">Estagiários</SectionTitle>
           </View>
         }
       />
@@ -157,83 +155,42 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.primary,
-    marginBottom: 12,
-  },
-  alertBox: {
-    backgroundColor: '#fef3c7',
-    borderRadius: 14,
-    padding: 12,
-    marginBottom: 12,
-    gap: 8,
+  pageTitle: {
+    fontSize: 26,
+    fontFamily: typography.fontBold,
+    color: colors.text,
+    marginBottom: 4,
   },
   alertRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  alertText: {
-    color: '#92400e',
-    fontSize: 13,
-    fontWeight: '600',
-    flex: 1,
-  },
-  kpiRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-  kpiCard: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    backgroundColor: '#fff',
+  kpiIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
-  kpiCardPressed: {
-    opacity: 0.8,
-  },
-  kpiValue: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  kpiLabel: {
-    marginTop: 4,
-    fontSize: 11,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 10,
+  kpiPressed: {
+    opacity: 0.85,
   },
   card: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderRadius: 20,
     padding: 16,
     marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.borderNeutral,
   },
   cardPressed: {
-    opacity: 0.85,
+    opacity: 0.88,
+    transform: [{ translateY: -2 }],
   },
   cardLeft: {
     flex: 1,
@@ -241,12 +198,13 @@ const styles = StyleSheet.create({
   },
   cardNome: {
     fontSize: 15,
-    fontWeight: '700',
-    color: colors.primary,
+    fontFamily: typography.fontBold,
+    color: colors.text,
     marginBottom: 2,
   },
   cardConsultas: {
     fontSize: 13,
+    fontFamily: typography.fontRegular,
     color: colors.muted,
   },
   cardRight: {
@@ -255,21 +213,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   badge: {
-    borderRadius: 999,
+    borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
   badgeText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontFamily: typography.fontBold,
   },
   chevron: {
     marginLeft: 2,
-  },
-  vazio: {
-    marginTop: 24,
-    textAlign: 'center',
-    color: colors.muted,
-    fontSize: 15,
   },
 });

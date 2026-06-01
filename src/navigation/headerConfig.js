@@ -19,7 +19,7 @@ export function getHeaderIconsOptions(navigation) {
     headerTitleAlign: 'center',
     headerTitleStyle: {
       color: '#ffffff',
-      fontWeight: '700',
+      fontFamily: 'Inter_700Bold',
       fontSize: 18,
     },
     headerLeft: () => (

@@ -17,11 +17,12 @@ import ProntuarioPaciente from '../telas/ProntuarioPaciente';
 import PresencaEstagiario from '../telas/PresencaEstagiario';
 import ConsultasPacienteEstagiario from '../telas/ConsultasPacienteEstagiario';
 import { colors } from '../services/theme';
-import { getHeaderIconsOptions } from './headerConfig';
+import { getDrawerOptions, getStackHeaderOptions, getTabBarOptions } from './navigationTheme';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
+const ROLE = 'estagiario';
 
 function LogoutPlaceholder() {
   return null;
@@ -33,23 +34,18 @@ function EstagiarioTabs({ user }) {
       screenOptions={({ route, navigation }) => ({
         tabBarIcon: ({ color, size }) => {
           const icons = {
-            HomeEstagiario: 'calendar-outline',
+            HomeEstagiario: 'home-outline',
             NovaConsulta: 'add-circle-outline',
             CheckIn: 'business-outline',
           };
 
           return <Ionicons name={icons[route.name]} size={size} color={color} />;
         },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: '#9ca3af',
-        tabBarStyle: { backgroundColor: '#fff' },
-        tabBarLabelStyle: { fontSize: 10 },
-        headerStyle: { backgroundColor: colors.primary },
-        headerTintColor: '#fff',
-        ...getHeaderIconsOptions(navigation),
+        ...getTabBarOptions(ROLE),
+        ...getStackHeaderOptions(ROLE, navigation),
       })}
     >
-      <Tab.Screen name="HomeEstagiario" options={{ title: 'Agenda' }}>
+      <Tab.Screen name="HomeEstagiario" options={{ title: 'Início' }}>
         {(props) => <HomeEstagiario {...props} user={user} />}
       </Tab.Screen>
       <Tab.Screen name="NovaConsulta" options={{ title: 'Agendar' }}>
@@ -62,18 +58,11 @@ function EstagiarioTabs({ user }) {
 
 function EstagiarioDrawer({ user, onLogout }) {
   return (
-    <Drawer.Navigator
-      screenOptions={({ navigation }) => ({
-        headerStyle: { backgroundColor: colors.primary },
-        headerTintColor: '#fff',
-        drawerActiveTintColor: colors.primary,
-        ...getHeaderIconsOptions(navigation),
-      })}
-    >
+    <Drawer.Navigator screenOptions={({ navigation }) => getDrawerOptions(ROLE, navigation)}>
       <Drawer.Screen name="Painel" options={{ title: 'Início', headerShown: false }}>
         {(props) => <EstagiarioTabs {...props} user={user} />}
       </Drawer.Screen>
-      <Drawer.Screen name="Pacientes">
+      <Drawer.Screen name="Pacientes" options={{ title: 'Meus Pacientes' }}>
         {(props) => <PacientesEstagiario {...props} user={user} />}
       </Drawer.Screen>
       <Drawer.Screen name="Presenca" options={{ title: 'Presença na clínica' }}>
@@ -82,7 +71,7 @@ function EstagiarioDrawer({ user, onLogout }) {
       <Drawer.Screen name="Encaminhamentos" options={{ title: 'Encaminhamentos' }}>
         {(props) => <Encaminhamentos {...props} user={user} />}
       </Drawer.Screen>
-      <Drawer.Screen name="Avaliacoes" options={{ title: 'Avaliações' }}>
+      <Drawer.Screen name="Avaliacoes" options={{ title: 'Avaliação Acadêmica' }}>
         {(props) => <Avaliacoes {...props} user={user} />}
       </Drawer.Screen>
       <Drawer.Screen name="Salas" options={{ title: 'Ambientes' }} component={Salas} />
@@ -91,6 +80,7 @@ function EstagiarioDrawer({ user, onLogout }) {
       </Drawer.Screen>
       <Drawer.Screen
         name="Sair"
+        options={{ title: 'Sair', drawerLabelStyle: { color: colors.danger } }}
         component={LogoutPlaceholder}
         listeners={{
           drawerItemPress: (event) => {
@@ -111,60 +101,27 @@ export default function EstagiarioStack({ user, onLogout }) {
       </Stack.Screen>
       <Stack.Screen
         name="ConsultasPacienteEstagiario"
-        options={{
+        options={({ navigation }) => ({
           title: 'Consultas do paciente',
-          headerStyle: { backgroundColor: colors.primary },
-          headerTintColor: '#fff',
-        }}
+          ...getStackHeaderOptions(ROLE, navigation),
+        })}
         component={ConsultasPacienteEstagiario}
       />
-      <Stack.Screen
-        name="ConsultaDetalhe"
-        options={{
-          title: 'Consulta',
-          headerStyle: { backgroundColor: colors.primary },
-          headerTintColor: '#fff',
-        }}
-      >
+      <Stack.Screen name="ConsultaDetalhe" options={({ navigation }) => ({ title: 'Consulta', ...getStackHeaderOptions(ROLE, navigation) })}>
         {(props) => <ConsultaDetalhe {...props} user={user} />}
       </Stack.Screen>
-      <Stack.Screen
-        name="CadastroUsuario"
-        options={{
-          title: 'Cadastro',
-          headerStyle: { backgroundColor: colors.primary },
-          headerTintColor: '#fff',
-        }}
-      >
+      <Stack.Screen name="CadastroUsuario" options={({ navigation }) => ({ title: 'Cadastro', ...getStackHeaderOptions(ROLE, navigation) })}>
         {(props) => <Cadastro {...props} user={user} />}
       </Stack.Screen>
       <Stack.Screen
         name="ProntuarioPaciente"
-        options={{
-          title: 'Prontuário',
-          headerStyle: { backgroundColor: colors.primary },
-          headerTintColor: '#fff',
-        }}
+        options={({ navigation }) => ({ title: 'Prontuário', ...getStackHeaderOptions(ROLE, navigation) })}
         component={ProntuarioPaciente}
       />
-      <Stack.Screen
-        name="EncaminhamentoPaciente"
-        options={{
-          title: 'Encaminhamento',
-          headerStyle: { backgroundColor: colors.primary },
-          headerTintColor: '#fff',
-        }}
-      >
+      <Stack.Screen name="EncaminhamentoPaciente" options={({ navigation }) => ({ title: 'Encaminhamento', ...getStackHeaderOptions(ROLE, navigation) })}>
         {(props) => <Encaminhamentos {...props} user={user} />}
       </Stack.Screen>
-      <Stack.Screen
-        name="Notificacoes"
-        options={{
-          title: 'Notificações',
-          headerStyle: { backgroundColor: colors.primary },
-          headerTintColor: '#fff',
-        }}
-      >
+      <Stack.Screen name="Notificacoes" options={({ navigation }) => ({ title: 'Notificações', ...getStackHeaderOptions(ROLE, navigation) })}>
         {(props) => <Notificacoes {...props} user={user} />}
       </Stack.Screen>
     </Stack.Navigator>

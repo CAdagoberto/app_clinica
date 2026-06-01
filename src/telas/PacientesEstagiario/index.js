@@ -3,18 +3,30 @@ import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'rea
 import { useFocusEffect } from '@react-navigation/native';
 import ActionButton from '../../components/ActionButton';
 import FadeInView from '../../components/FadeInView';
+import SectionTitle from '../../components/SectionTitle';
 import ScreenContainer from '../../components/ScreenContainer';
 import { getPacientesComStatus } from '../../data/clinicaApi';
-import { colors } from '../../services/theme';
+import { colors, typography } from '../../services/theme';
+import { themeStyles } from '../../services/themeStyles';
 
 function getStatusStyle(status) {
   if (status === 'cancelado') {
-    return { backgroundColor: '#fee2e2', color: '#b91c1c' };
+    return { backgroundColor: colors.dangerBg, color: colors.dangerText };
   }
   if (status === 'sessão confirmada') {
-    return { backgroundColor: '#fef9c3', color: '#854d0e' };
+    return { backgroundColor: colors.successBg, color: colors.successText };
   }
-  return { backgroundColor: '#d1fae5', color: colors.primary };
+  return { backgroundColor: colors.warningBg, color: colors.warningText };
+}
+
+function iniciais(nome) {
+  return nome
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join('')
+    .toUpperCase();
 }
 
 export default function PacientesEstagiario({ user, navigation }) {
@@ -37,8 +49,8 @@ export default function PacientesEstagiario({ user, navigation }) {
   return (
     <ScreenContainer>
       <FadeInView style={styles.wrapper}>
-        <Text style={styles.title}>Pacientes</Text>
-        <Text style={styles.subtitle}>Toque no paciente para abrir o prontuário e o histórico de consultas.</Text>
+        <SectionTitle>Meus Pacientes</SectionTitle>
+        <Text style={themeStyles.sub}>Toque no paciente para abrir o prontuário e o histórico de consultas.</Text>
         <View style={styles.newButton}>
           <ActionButton
             title="Cadastrar Paciente"
@@ -62,16 +74,21 @@ export default function PacientesEstagiario({ user, navigation }) {
                 style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
                 onPress={() => navigation.navigate('ProntuarioPaciente', { pacienteId: item.id })}
               >
-                <Text style={styles.name}>{item.nome}</Text>
-                <Text style={styles.info}>Prontuário: {item.prontuario || '—'}</Text>
-                <Text style={styles.info}>{item.email}</Text>
-                <View style={[styles.badge, { backgroundColor: statusStyle.backgroundColor }]}>
-                  <Text style={[styles.badgeText, { color: statusStyle.color }]}>{item.statusPaciente}</Text>
+                <View style={themeStyles.avatarPatient}>
+                  <Text style={themeStyles.avatarPatientText}>{iniciais(item.nome)}</Text>
+                </View>
+                <View style={styles.cardBody}>
+                  <Text style={styles.name}>{item.nome}</Text>
+                  <Text style={styles.info}>Prontuário: {item.prontuario || '—'}</Text>
+                  <Text style={styles.info}>{item.email}</Text>
+                  <View style={[styles.badge, { backgroundColor: statusStyle.backgroundColor }]}>
+                    <Text style={[styles.badgeText, { color: statusStyle.color }]}>{item.statusPaciente}</Text>
+                  </View>
                 </View>
               </Pressable>
             );
           }}
-          ListEmptyComponent={<Text style={styles.empty}>Nenhum paciente encontrado.</Text>}
+          ListEmptyComponent={<Text style={themeStyles.empty}>Nenhum paciente encontrado.</Text>}
         />
       </FadeInView>
     </ScreenContainer>
@@ -82,59 +99,48 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: colors.primary,
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: colors.muted,
-    marginBottom: 12,
+  newButton: {
+    marginBottom: 14,
   },
   card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 16,
-    backgroundColor: '#ffffff',
     padding: 14,
     marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
   },
   cardPressed: {
     opacity: 0.88,
+    transform: [{ translateY: -2 }],
   },
-  newButton: {
-    marginBottom: 12,
+  cardBody: {
+    flex: 1,
   },
   name: {
     fontSize: 16,
-    fontWeight: '700',
-    color: colors.primary,
+    fontFamily: typography.fontBold,
+    color: colors.text,
+    marginBottom: 4,
   },
   info: {
-    marginTop: 4,
-    color: colors.text,
+    fontSize: 13,
+    fontFamily: typography.fontRegular,
+    color: colors.muted,
+    marginBottom: 2,
   },
   badge: {
-    marginTop: 10,
     alignSelf: 'flex-start',
-    borderRadius: 999,
+    marginTop: 8,
+    borderRadius: 20,
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 4,
   },
   badgeText: {
-    fontWeight: '700',
     fontSize: 12,
-  },
-  empty: {
-    marginTop: 16,
-    color: colors.muted,
-    textAlign: 'center',
+    fontFamily: typography.fontSemiBold,
   },
 });

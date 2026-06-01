@@ -1,16 +1,23 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import ActionButton from '../../components/ActionButton';
 import ScreenContainer from '../../components/ScreenContainer';
 import ConsultaCard from '../../components/ConsultaCard';
+import SectionTitle from '../../components/SectionTitle';
 import { atualizarStatusConsulta, getConsultasByUsuario } from '../../data/clinicaApi';
-import { colors } from '../../services/theme';
+import { colors, typography } from '../../services/theme';
+import { themeStyles } from '../../services/themeStyles';
 
 export default function HomePaciente({ user, navigation }) {
   const [consultas, setConsultas] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [atualizandoId, setAtualizandoId] = useState(null);
+
+  const proximaPendente = useMemo(
+    () => consultas.find((c) => c.status === 'pendente'),
+    [consultas]
+  );
 
   const carregarConsultas = useCallback(async () => {
     setRefreshing(true);
@@ -53,7 +60,23 @@ export default function HomePaciente({ user, navigation }) {
 
   return (
     <ScreenContainer>
-      <Text style={styles.title}>Minhas Consultas</Text>
+      <Text style={styles.pageTitle}>Início</Text>
+      <Text style={themeStyles.sub}>Suas consultas e confirmações</Text>
+
+      {proximaPendente ? (
+        <View style={themeStyles.cardHero}>
+          <Text style={themeStyles.cardHeroTitle}>Próxima consulta</Text>
+          <Text style={themeStyles.cardHeroSub}>
+            {proximaPendente.data} às {proximaPendente.horario}
+          </Text>
+          <Text style={themeStyles.cardHeroSub}>
+            {proximaPendente.salaNome} · {proximaPendente.estagiarioNome}
+          </Text>
+        </View>
+      ) : null}
+
+      <SectionTitle variant="primary">Minhas consultas</SectionTitle>
+
       <FlatList
         data={consultas}
         keyExtractor={(item) => item.id.toString()}
@@ -88,39 +111,34 @@ export default function HomePaciente({ user, navigation }) {
             )}
           </ConsultaCard>
         )}
-        ListEmptyComponent={<Text style={styles.empty}>Nenhuma consulta encontrada.</Text>}
+        ListEmptyComponent={<Text style={themeStyles.empty}>Nenhuma consulta encontrada.</Text>}
       />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: colors.primary,
-    marginBottom: 12,
+  pageTitle: {
+    fontSize: 26,
+    fontFamily: typography.fontBold,
+    color: colors.text,
+    marginBottom: 4,
   },
   buttons: {
     marginTop: 10,
     flexDirection: 'row',
+    gap: 8,
   },
   button: {
     flex: 1,
-    marginRight: 8,
   },
   buttonNoMargin: {
     flex: 1,
-  },
-  empty: {
-    color: colors.muted,
-    marginTop: 20,
-    textAlign: 'center',
   },
   helper: {
     marginTop: 10,
     color: colors.muted,
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: typography.fontSemiBold,
   },
 });
