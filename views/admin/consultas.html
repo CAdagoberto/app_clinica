@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultas - Gestão</title>
+    <link rel="stylesheet" href="../../src/css/admin/global.css">
+    <link rel="stylesheet" href="../../src/css/admin/consultas.css">
+    <link rel="stylesheet" href="../../src/css/admin/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo-admin">CH</div>
+            <hr class="linha-menu">
+            <nav>
+                <a href="index.html"><i class="fa-solid fa-chart-line"></i> Visão Geral</a>
+                <a href="estagiarios.html"><i class="fa-solid fa-user-graduate"></i> Estagiários</a>
+                <a href="consultas.html" class="active"><i class="fa-solid fa-calendar-check"></i> Consultas</a>
+                <a href="agendar_consulta.html"><i class="fa-regular fa-calendar-plus"></i> Agendar Consulta</a>
+                <a href="prontuarios.html"><i class="fa-solid fa-file-medical"></i> Prontuários</a>
+                <a href="salas.html"><i class="fa-solid fa-door-open"></i> Salas</a>
+            </nav>
+            <hr class="linha-menu">
+            <div class="sidebar-footer">
+                <a href="/index.html?logout=1"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <a href="index.html" class="btn-voltar"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+
+            <header class="cabecalho-pagina">
+                <h1>Todas as Consultas</h1>
+                <p>Gerencie os atendimentos de todos os estagiários. Filtre por profissional ou status.</p>
+            </header>
+
+            <div class="filtros-barra">
+                <select id="filtro-estagiario">
+                    <option value="">Todos os estagiários</option>
+                </select>
+                <select id="filtro-status">
+                    <option value="">Todos os status</option>
+                    <option value="pendente">Aguardando</option>
+                    <option value="confirmado">Em atendimento</option>
+                    <option value="realizada">Finalizada</option>
+                    <option value="falta">Falta</option>
+                    <option value="cancelado">Cancelada</option>
+                </select>
+                <input type="date" id="filtro-data" value="">
+                <a href="agendar_consulta.html" class="btn-admin-primario"><i class="fa-solid fa-plus"></i> Nova consulta</a>
+            </div>
+
+            <div class="card-branco lista-consultas-admin" id="lista-consultas"></div>
+        </main>
+    </div>
+
+    <script src="../../src/js/clinica-config.js"></script>
+    <script src="../../src/js/web-common.js"></script>
+    <script>
+        let todasConsultas = [];
+
+        const mapStatusAdmin = (status) => {
+            const statusMap = {
+                'pendente': { classe: 'status-pendente', texto: 'Aguardando' },
+                'confirmado': { classe: 'status-em-atendimento', texto: 'Em atendimento' },
+                'realizada': { classe: 'status-realizada', texto: 'Finalizada' },
+                'falta': { classe: 'status-falta', texto: 'Falta' },
+                'cancelado': { classe: 'status-cancelada', texto: 'Cancelada' }
+            };
+            return statusMap[status] || { classe: '', texto: status };
+        };
+
+        const formatarData = (data) => {
+            if (!data) return '—';
+            const parte = String(data).slice(0, 10);
+            const [ano, mes, dia] = parte.split('-');
+            return `${dia}/${mes}/${ano}`;
+        };
+
+        const formatarHorario = (horario) => (horario ? String(horario).slice(0, 5) : '00:00');
+
+        function renderizarConsultas() {
+            const estId = document.getElementById('filtro-estagiario').value;
+            const status = document.getElementById('filtro-status').value;
+            const dataFiltro = document.getElementById('filtro-data').value;
+
+            let lista = [...todasConsultas];
+            
+            if (estId) lista = lista.filter((c) => String(c.estagiario_id) === estId);
+            if (status) lista = lista.filter((c) => c.status === status);
+            
+            if (dataFiltro) {
+                lista = lista.filter((c) => String(c.data_consulta).slice(0, 10) === dataFiltro);
+            }
+
+            const el = document.getElementById('lista-consultas');
+            if (!lista.length) {
+                el.innerHTML = '<p style="padding:20px;color:#64748b">Nenhuma consulta encontrada.</p>';
+                return;
+            }
+
+            el.innerHTML = lista.map((c) => {
+                const st = mapStatusAdmin(c.status);
+                const iniciais = (c.estagiarioNome || '?').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
+
+                return `
+                <div class="consulta-linha-admin">
+                    <div class="consulta-avatar-est">${iniciais}</div>
+                    <div class="col-principal">
+                        <strong>${c.pacienteNome}</strong>
+                        <span class="consulta-meta">
+                            <span class="chip-estagiario"><i class="fa-solid fa-user-graduate"></i> ${c.estagiarioNome}</span>
+                            <span><i class="fa-regular fa-calendar"></i> ${formatarData(c.data_consulta)} às ${formatarHorario(c.horario)}</span>
+                        </span>
+                    </div>
+                    <span class="badge-status ${st.classe}">${st.texto}</span>
+                    <div class="consulta-acoes">
+                        <a href="prontuarios.html" class="btn-admin-secundario">Prontuário</a>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        window.onload = async function () {
+            const sessao = await WebApp.initPagina({ tipos: ['admin'], navAtivo: 'consultas.html' });
+            if (!sessao) return;
+
+            try {
+                const respConsultas = await fetch('http://localhost:3000/api/consultas');
+                if (respConsultas.ok) {
+                    todasConsultas = await respConsultas.json();
+                } else {
+                    document.getElementById('lista-consultas').innerHTML =
+                        '<p style="padding:20px;color:#ef4444">Erro ao carregar consultas. Reinicie o servidor.</p>';
+                }
+            } catch (err) {
+                console.error('Erro ao buscar consultas:', err);
+                document.getElementById('lista-consultas').innerHTML =
+                    '<p style="padding:20px;color:#ef4444">Não foi possível conectar ao servidor.</p>';
+            }
+
+            try {
+                const respEst = await fetch('http://localhost:3000/api/usuarios?cargo=estagiario');
+                if (respEst.ok) {
+                    const estagiarios = await respEst.json();
+                    const selectEst = document.getElementById('filtro-estagiario');
+                    estagiarios.forEach((e) => {
+                        const opt = document.createElement('option');
+                        opt.value = e.id;
+                        opt.textContent = e.nome;
+                        selectEst.appendChild(opt);
+                    });
+                }
+            } catch (err) { console.error("Erro ao buscar estagiários:", err); }
+
+            ['filtro-estagiario', 'filtro-status', 'filtro-data'].forEach((id) => {
+                document.getElementById(id).addEventListener('change', renderizarConsultas);
+            });
+
+            renderizarConsultas();
+        };
+    </script>
+</body>
+</html>

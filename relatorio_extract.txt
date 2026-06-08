@@ -1,0 +1,126 @@
+Relatório Extensionista
+Curso
+Análise e Desenvolvimento de Sistemas
+Aluno
+Cristian Adagoberto
+Matrícula
+202404282848
+Aluno
+[Seu Nome]
+Matrícula
+[Sua Matrícula]
+Aluno
+[Seu Nome]
+Matrícula
+[Sua Matrícula]
+Aluno
+[Seu Nome]
+Matrícula
+[Sua Matrícula]
+Aluno
+[Seu Nome]
+Matrícula
+[Sua Matrícula]
+Orientador
+[Nome Professor]
+
+
+Período da Atividade
+16/03/2026 a 08/06/2026
+
+Sumário
+ TOC \h \u \z \t &quot;Heading 1,1,Heading 2,2,Heading 3,3,&quot;1. PAGEREF _jk8rk981ovfy \h Introdução2
+2. PAGEREF _oete3bclqgqc \h Contexto da Empresa2
+3. PAGEREF _xisydv7jpt1k \h Objetivos a serem alcançados pela atividade extensionista2
+4. PAGEREF _lrld4ekhl3o2 \h Atividades Desenvolvidas2
+5. PAGEREF _2l9br75jb69e \h Principais Aprendizados3
+6. PAGEREF _45uc1vgnzg7a \h Resultados Obtidos3
+7. PAGEREF _b5da08keenft \h Conclusão4
+8. PAGEREF _cmt067rdv13 \h Agradecimentos4
+9. PAGEREF _yop2wo94bp4m \h Aceite da Empresa4
+10.   Anexos6
+
+
+
+Observação: o que está em itálico deve ser alterado e preenchido – Antes da entrega final apagar esta linha do seu trabalho.
+Introdução
+
+Neste relatório, apresento as atividades desenvolvidas durante a atividade extensionista no campo de Análise e Desenvolvimento de Sistemas. Esta atividade extensionista foi realizada como requisito para conclusão da disciplina Programação para dispositivos móveis em android da graduação em Análise e Desenvolvimento de Sistemas, fornecido pela Universidade Estácio unidade Liberdade.
+&lt;completar com conteúdo de ao menos uma página&gt;
+Contexto da Empresa
+Nome da Empresa:
+CNPJ da Empresa:
+Nome do Representante da Empresa:
+CPF do Representante da Empresa:
+Localização:
+Setor de Atuação:
+Descrição da Empresa completa da empresa &lt;adicione fotos (fachada, produtos, sites)&gt;:
+
+Objetivos a serem alcançados pela atividade extensionista
+
+Descreva o problema que a atividade extensionista pretende resolver:
+[Descreva com o máximo de detalhes]
+
+
+Atividades Desenvolvidas
+[Exemplo
+Durante o período da atividade extensionista, as seguintes atividades foram realizadas:
+Planejamento:
+Análise de Requisitos: Participação na elicitação e documentação de requisitos de sistemas.
+Cronograma: [o macro cronograma]
+
+
+Desenvolvimento de Software: Contribuição para o desenvolvimento de módulos específicos de sistemas, utilizando linguagens de programação como [lista de linguagens utilizadas].
+
+Testes de Software: Realização de testes de unidade e integração para garantir a qualidade do software desenvolvido.
+
+Suporte Técnico: Prestação de suporte técnico aos usuários finais dos sistemas, identificando e resolvendo problemas relatados.]
+
+Principais Aprendizados
+
+Durante a atividade extensionista, alguns dos principais aprendizados foram:
+[Exemplo
+Aprofundamento no entendimento do ciclo de vida de desenvolvimento de software.
+Melhoria das habilidades de comunicação e trabalho em equipe.
+Familiarização com ferramentas de controle de versão, como Git.]
+Resultados Obtidos
+
+Descreva a jornada do início até a entrega, coloque aqui todos os principais pontos positivos, negativos e dificuldades
+
+Descreva os resultados obtidos com o seu trabalho extensionista.
+
+
+Papéis e responsabilidade: [coloque aqui o nome de cada integrante do grupo o principal papel e responsabilidade pelo trabalho].
+
+Conclusão
+[Descreva a conclusão da atividade com o máximo de detalhes
+Exemplo
+A atividade extensionista proporcionou uma experiência valiosa no campo de Análise e Desenvolvimento de Sistemas, permitindo a aplicação dos conhecimentos teóricos em um ambiente prático de trabalho. Os desafios enfrentados durante o desenvolvimento contribuíram significativamente para o meu crescimento profissional e pessoal.]
+
+ Agradecimentos
+
+Gostaria de expressar minha gratidão à equipe da [Nome da Empresa] e [Nome do Representante da Empresa] pela oportunidade concedida e pelo apoio prestado durante o período de estágio.
+
+Aceite da Empresa
+Eu, [Nome do Representante da Empresa], representando [Nome da Empresa ou Cliente], declaro por meio deste documento que o desenvolvimento de software, intitulado &quot;[Nome do Software]&quot;, realizado pelos alunos do curso Analise e Desenvolvimento de Software do curso Programação para dispositivos móveis em android  [Nome dos alunos], atende aos requisitos acordados e está pronto para ser entregue e implementado conforme o acordo estabelecido.
+
+Após revisão minuciosa do software em questão, confirmamos que o mesmo foi desenvolvido de acordo com as especificações acordadas, funcionalidades solicitadas e padrões de qualidade exigidos. Testes foram conduzidos e os resultados demonstram que o software atende às expectativas e necessidades do usuário final.
+
+Declaramos também que o software desenvolvido é uma doação dos alunos para a empresa [Nome da Empresa ou Cliente], a quaisquer ajustes, correções ou melhorias acordadas durante o processo de desenvolvimento foram devidamente implementados e testados, garantindo assim a estabilidade e funcionalidade do produto final, sem que haja qualquer manutenção posterior ou garantia do software.
+
+Assim, aceitamos formalmente o desenvolvimento de software e seu código fonte entregue pelos alunos do curso Análise e Desenvolvimento de Sistemas pelos alunos [Nome dos alunos], reconhecendo-o como entregue, sem qualquer ônus ou garantia posterior e pronto para uso.
+Data: [Data de Aceite]
+Assinaturas:
+____________________________________
+
+[Nome do Representante da Empresa]
+
+
+__________________________________
+
+Fabio da Roza Oliveira
+
+
+Este documento formaliza o aceite do desenvolvimento de software e serve como confirmação por parte empresa de que o produto foi entregue.
+Anexos
+Códigos e analises

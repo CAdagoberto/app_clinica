@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prontuário</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../../src/css/estagiario/global.css">
+    <link rel="stylesheet" href="../../src/css/estagiario/prontuarios.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <aside class="sidebar">
+            <div class="logo">CH</div>
+
+            <hr class="linha-menu"> 
+            <nav>
+                <a href="index.html"><i class="fa-solid fa-house"></i> Início</a>
+                <a href="agendar_consulta.html"><i class="fa-regular fa-calendar-days"></i> Minha Agenda</a>
+                <a href="meus_pacientes.html" class="active"><i class="fa-solid fa-users"></i> Meus Pacientes</a>
+                <a href="prontuarios.html"><i class="fa-solid fa-file-medical"></i> Prontuários</a>
+                <a href="avaliacao.html"><i class="fa-solid fa-graduation-cap"></i> Avaliação Acadêmica</a>
+            </nav>
+            
+            <hr class="linha-menu"> 
+            
+            <div class="sidebar-footer">
+                <a href="/index.html?logout=1"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+            </div>
+        </aside>
+
+        <main class="main-prontuario">
+            <a href="#" onclick="history.back(); return false;" class="btn-voltar">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+
+            <header class="cabecalho-tela">
+                <h1>Prontuários</h1>
+                <p>Histórico clínico e evoluções das sessões realizadas.</p>
+            </header>
+            
+            <div class="card-paciente-topo">
+                <div class="topo-perfil-linha">
+                    <div class="paciente-avatar" id="paciente-avatar">-</div>
+                    <div class="paciente-nome-bloco">
+                        <h2 id="paciente-nome">Carregando...</h2>
+                        <span class="tag-status">Em Acompanhamento</span>
+                    </div>
+                </div>
+
+                <div class="paciente-dados-pílulas" id="pilulas-container"></div>
+
+                <hr class="linha-divisoria">
+
+                <div class="progresso-tratamento-bloco">
+                    <div class="progresso-texto">
+                        <span><i class="fa-solid fa-chart-line"></i> Progresso do Tratamento</span>
+                        <strong class="porcentagem" id="porcentagem-texto">0%</strong>
+                    </div>
+                    <div class="barra-progresso-fundo">
+                        <div class="barra-progresso-preenchimento" id="barra-preenchimento" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="grid-metricas-paciente" id="metricas-container"></div>
+            </div>
+
+            <div class="alerta-supervisor" id="alerta-supervisor" style="display: none;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <p><strong>Atenção:</strong> Há sessões pendentes de revisão pelo supervisor.</p>
+            </div>
+            
+            <section class="secao-historico">
+                <div class="historico-header-linha">
+                    <h3>Histórico de Atendimento</h3>
+                    <div class="filtros-status">
+                        <span class="filtro-tag f-concluida"><i class="fa-regular fa-circle-check"></i> Concluída</span>
+                        <span class="filtro-tag f-pendente"><i class="fa-regular fa-circle-dot"></i> Pendente</span>
+                        <span class="filtro-tag f-agendada"><i class="fa-regular fa-calendar"></i> Agendada</span>
+                    </div>
+                </div>
+
+                <div class="lista-sessoes" id="linha-do-tempo-sessoes"></div> 
+            </section>
+
+            <button class="btn-pdf-prontuario">
+                <i class="fa-solid fa-file-pdf"></i> Baixar Prontuário Completo (PDF)
+            </button> 
+        </main>
+    </div>
+
+    <script src="../../src/js/clinica-config.js"></script>
+    <script src="../../src/js/web-common.js"></script>
+    <script>
+        window.onload = async () => {
+            const sessao = await WebApp.initPagina({ tipos: ['estagiario', 'admin'], navAtivo: 'meus_pacientes.html' });
+            if (!sessao) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const pacienteQuery = urlParams.get('paciente') || urlParams.get('id');
+
+            if (!pacienteQuery) {
+                alert("Nenhum paciente selecionado!");
+                window.location.href = sessao.cargo === 'admin' ? '../admin/prontuarios.html' : 'meus_pacientes.html';
+                return;
+            }
+
+            try {
+                let todasConsultas = [];
+                let pacienteNome = '';
+
+                // Se for admin acessando via ID, busca o prontuário específico
+                if (sessao.cargo === 'admin' && pacienteQuery.match(/^\d+$/)) {
+                    const respPront = await fetch(`http://localhost:3000/api/prontuarios/${pacienteQuery}`);
+                    if (respPront.ok) {
+                        const prontuario = await respPront.json();
+                        pacienteNome = prontuario.paciente;
+                        
+                        // Simula o formato de consulta para exibição
+                        todasConsultas = [{
+                            id: prontuario.id,
+                            paciente_nome: prontuario.paciente,
+                            data_consulta: prontuario.data_consulta || new Date().toISOString().split('T')[0],
+                            horario: prontuario.horario || '14:00',
+                            status: prontuario.status,
+                            resumo: prontuario.resumo,
+                            duvidas: prontuario.duvidas
+                        }];
+                    }
+                } else {
+                    // Se for estagiário, busca suas consultas normalmente
+                    const resposta = await fetch(`http://localhost:3000/api/consultas/${sessao.id}`);
+                    
+                    if (resposta.ok) {
+                        const consultas = await resposta.json();
+                        todasConsultas = consultas.filter(c => c.paciente_nome === pacienteQuery);
+                        pacienteNome = pacienteQuery;
+                    }
+                }
+                
+                if (todasConsultas.length === 0) {
+                    document.getElementById('linha-do-tempo-sessoes').innerHTML = '<p style="text-align: center; padding: 20px; color: #64748b;">Nenhuma sessão encontrada para este paciente.</p>';
+                    document.getElementById('paciente-nome').textContent = pacienteNome || pacienteQuery;
+                    document.getElementById('paciente-avatar').textContent = (pacienteNome || pacienteQuery).charAt(0).toUpperCase();
+                    return;
+                }
+
+                document.getElementById('paciente-nome').textContent = pacienteNome || pacienteQuery;
+                document.getElementById('paciente-avatar').textContent = (pacienteNome || pacienteQuery).charAt(0).toUpperCase();
+
+                const consultasPaciente = todasConsultas.sort((a, b) => new Date(a.data_consulta + 'T' + a.horario) - new Date(b.data_consulta + 'T' + b.horario));
+
+                    const hoje = new Date();
+                    const dataHojeFormato = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+                    const horaAtual = hoje.toTimeString().slice(0, 5);
+
+                    let realizadas = 0;
+                    let agendadas = 0;
+                    let htmlSessoes = '';
+
+                    consultasPaciente.forEach((c, index) => {
+                        const numSessao = index + 1;
+                        
+                        const partesData = c.data_consulta.split('-');
+                        const dataBr = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+                        
+                        let statusClass, badgeClass, badgeText, acaoBtn;
+
+                        if (c.data_consulta < dataHojeFormato || (c.data_consulta === dataHojeFormato && c.horario.slice(0,5) < horaAtual)) {
+                            statusClass = 'concluida';
+                            badgeClass = 'b-concluida';
+                            badgeText = 'Concluída';
+                            acaoBtn = `<button class="btn-visualizar"><i class="fa-regular fa-eye"></i> Visualizar</button>`;
+                            realizadas++;
+                        } else if (c.data_consulta === dataHojeFormato) {
+                            statusClass = 'proxima';
+                            badgeClass = 'b-proxima';
+                            badgeText = 'Próxima Sessão';
+                            acaoBtn = `<button class="btn-iniciar-atendimento"><i class="fa-solid fa-play"></i> Iniciar Evolução</button>`;
+                            agendadas++;
+                        } else {
+                            statusClass = 'futura';
+                            badgeClass = 'b-futura';
+                            badgeText = 'Agendada';
+                            acaoBtn = ''; 
+                            agendadas++;
+                        }
+
+                        htmlSessoes += `
+                            <div class="card-sessao ${statusClass}">
+                                <div class="sessao-esquerda">
+                                    <div class="sessao-numero">${numSessao}</div>
+                                    <div class="sessao-info-bloco">
+                                        <div class="sessao-titulo-linha">
+                                            <h4>Sessão ${numSessao}</h4>
+                                            <span class="badge-status ${badgeClass}">${badgeText}</span>
+                                        </div>
+                                        <p class="sessao-subtexto"><i class="fa-regular fa-calendar"></i> ${dataBr} às ${c.horario.slice(0,5)}</p>
+                                    </div>
+                                </div>
+                                ${acaoBtn}
+                            </div>
+                        `;
+                    });
+
+                    document.getElementById('linha-do-tempo-sessoes').innerHTML = htmlSessoes;
+
+                    const totalPlanejado = Math.max(10, consultasPaciente.length);
+                    const progressoTratamento = Math.round((realizadas / totalPlanejado) * 100);
+                    
+                    document.getElementById('porcentagem-texto').textContent = `${progressoTratamento}%`;
+                    document.getElementById('barra-preenchimento').style.width = `${progressoTratamento}%`;
+
+                    const dataInicioPartes = consultasPaciente[0].data_consulta.split('-');
+                    const dataInicioBr = `${dataInicioPartes[2]}/${dataInicioPartes[1]}/${dataInicioPartes[0]}`;
+
+                    const proximaConsulta = consultasPaciente.find(c => c.data_consulta >= dataHojeFormato && (c.data_consulta > dataHojeFormato || c.horario.slice(0,5) >= horaAtual));
+                    const proximaDataBr = proximaConsulta ? proximaConsulta.data_consulta.split('-').reverse().join('/') + ' às ' + proximaConsulta.horario.slice(0,5) : 'Sem sessões futuras';
+
+                    document.getElementById('pilulas-container').innerHTML = `
+                        <div class="pílula-item"><span>Idade: -- anos</span></div>
+                        <div class="pílula-item"><i class="fa-regular fa-calendar"></i> <span>Início: ${dataInicioBr}</span></div>
+                        <div class="pílula-item pílula-destaque"><i class="fa-regular fa-clock"></i> <span>Próxima sessão: ${proximaDataBr}</span></div>
+                    `;
+
+                    document.getElementById('metricas-container').innerHTML = `
+                        <div class="cartao-metrica">
+                            <h3>${realizadas}</h3>
+                            <p class="metrica-titulo">Sessões Realizadas</p>
+                            <p class="metrica-sub">de ${totalPlanejado} planejadas</p>
+                        </div>
+                        <div class="cartao-metrica">
+                            <h3>${progressoTratamento}%</h3>
+                            <p class="metrica-titulo">Frequência</p>
+                            <p class="metrica-sub">${realizadas} de ${realizadas} compareceram</p>
+                        </div>
+                        <div class="cartao-metrica">
+                            <h3>${agendadas}</h3>
+                            <p class="metrica-titulo">Agendadas</p>
+                            <p class="metrica-sub">no calendário</p>
+                        </div>
+                    `;
+                }
+            } catch (erro) {
+                console.error("Erro ao carregar prontuário real:", erro);
+                document.getElementById('linha-do-tempo-sessoes').innerHTML = '<p style="text-align: center; color: red;">Erro ao se conectar com o servidor Node.js.</p>';
+            }
+        };
+    </script>
+</body>
+</html>

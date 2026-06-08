@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Clínica Horizonte</title>
+    <link rel="stylesheet" href="src/css/login.css">
+    <link rel="stylesheet" href="src/css/shared/animations.css">
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="logo-avatar">CH</div>
+
+        <div class="header-text">
+            <h2 id="saudacao">Bem-vindo(a)!</h2>
+            <h1>CLÍNICA HORIZONTE</h1>
+            <p class="clinica-razao-social" data-clinica-razao>Centro Integrado de Saúde Mental Horizonte Ltda.</p>
+        </div>
+
+        <div id="tela-login">
+            <form id="form-login" action="#" method="POST">
+                <div class="input-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
+                </div>
+
+                <button type="submit" class="login-btn" id="btn-entrar">Entrar</button>
+            </form>
+
+
+            <div class="toggle-link">
+                <a href="#" id="btn-primeiro-acesso">Primeiro acesso? Crie sua senha</a>
+            </div>
+        </div>
+
+        <div id="tela-primeiro-acesso" style="display: none;">
+            <form id="form-cadastro" action="#" method="POST">
+                <div class="input-group">
+                    <label for="cpf">CPF (Somente números)</label>
+                    <input type="text" id="cpf" name="cpf" placeholder="Digite os 11 dígitos" maxlength="11" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="nome">Nome do Paciente</label>
+                    <input type="text" id="nome" name="nome" placeholder="Digite seu nome" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="novo-email">Cadastre seu E-mail</label>
+                    <input type="email" id="novo-email" name="novo-email" placeholder="Digite seu e-mail" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="nova-senha">Crie uma Senha</label>
+                    <input type="password" id="nova-senha" name="nova-senha" placeholder="Crie sua senha" required>
+                </div>
+
+                <button type="submit" class="login-btn">Finalizar Cadastro</button>
+            </form>
+
+            <div class="toggle-link">
+                <a href="#" id="btn-voltar-login">Voltar para o Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/js/clinica-config.js"></script>
+    <script>
+        ClinicaConfig.aplicarMarca();
+
+        // Lógica de Alternância entre as telas de Login e Cadastro
+        document.getElementById('btn-primeiro-acesso').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('tela-login').style.display = 'none';
+            document.getElementById('tela-primeiro-acesso').style.display = 'block';
+        });
+
+        document.getElementById('btn-voltar-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('tela-primeiro-acesso').style.display = 'none';
+            document.getElementById('tela-login').style.display = 'block';
+        });
+
+        // ------------------ LÓGICA DE LOGIN ------------------
+        const formLogin = document.getElementById('form-login');
+
+        formLogin.addEventListener('submit', async (evento) => {
+            evento.preventDefault(); 
+
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+
+            try {
+                const resposta = await fetch('http://localhost:3000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, senha })
+                });
+
+                const dados = await resposta.json();
+
+                if (resposta.ok) {
+                    alert('Acesso liberado! Bem-vindo, ' + dados.usuario.nome); 
+                    
+                    // 1. A MÁGICA: Salva o crachá no navegador antes de mudar de tela!
+                    localStorage.setItem('usuarioLogado', JSON.stringify(dados.usuario));
+
+                    // 2. Roteamento corrigido para as pastas 'views'
+                    const cargo = dados.usuario.cargo;
+                    if (cargo === 'admin') {
+                        window.location.href = 'views/admin/index.html';
+                    } else if (cargo === 'estagiario') {
+                        window.location.href = 'views/estagiario/index.html';
+                    } else {
+                        window.location.href = 'views/paciente/index.html';
+                    }
+                } else {
+                    alert(dados.erro); 
+                }
+
+            } catch (erro) {
+                alert('Não foi possível conectar ao servidor. Verifique se o Node está rodando.');
+            }
+        });
+
+        // ------------------ LÓGICA DE CADASTRO ------------------
+        const formCadastro = document.getElementById('form-cadastro');
+
+        formCadastro.addEventListener('submit', async (evento) => {
+            evento.preventDefault(); 
+
+            const cpf = document.getElementById('cpf').value;
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('novo-email').value;
+            const senha = document.getElementById('nova-senha').value;
+
+            try {
+                const resposta = await fetch('http://localhost:3000/api/cadastro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cpf, nome, email, senha })
+                });
+
+                const dados = await resposta.json();
+
+                if (resposta.ok) {
+                    alert('Cadastro realizado com sucesso! Agora você pode fazer o login.'); 
+                    document.getElementById('btn-voltar-login').click();
+                } else {
+                    alert(dados.erro); 
+                }
+
+            } catch (erro) {
+                alert('Erro ao tentar cadastrar. Verifique o servidor.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Consulta - Clínica Horizonte</title>
+    <link rel="stylesheet" href="../../src/css/estagiario/global.css">
+    <link rel="stylesheet" href="../../src/css/estagiario/agendar_consulta.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">CH</div>
+            <hr class="linha-menu">
+            <nav>
+                <a href="index.html"><i class="fa-solid fa-house"></i> Início</a>
+                <a href="agendar_consulta.html" class="active"><i class="fa-regular fa-calendar-days"></i> Minha Agenda</a>
+                <a href="meus_pacientes.html"><i class="fa-solid fa-users"></i> Meus Pacientes</a>
+                <a href="prontuarios.html"><i class="fa-solid fa-file-medical"></i> Prontuários</a>
+                <a href="avaliacao.html"><i class="fa-solid fa-graduation-cap"></i> Avaliação Acadêmica</a>
+            </nav>
+            <hr class="linha-menu">
+            <div class="sidebar-footer">
+                <a href="/index.html?logout=1"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <a href="index.html" class="btn-voltar">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+
+            <section class="formulario-container">
+                <div class="cabecalho-titulo">
+                    <h2>Agendar Consulta</h2>
+                    <p class="subtitulo-explicativo">Preencha os campos abaixo para reservar um horário para o atendimento do paciente.</p>
+                </div>
+
+                <div class="card-formulario">
+                    <form id="form-agendamento">
+                        <div class="grupo-input">
+                            <label for="paciente">Nome do Paciente</label>
+                            <div class="wrapper-input-icone">
+                                <select id="paciente" required>
+                                    <option value="" disabled selected>Carregando pacientes...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grupo-input">
+                            <label for="data-consulta">Data</label>
+                            <input type="text" id="data-consulta" placeholder="DD/MM/AAAA" maxlength="10" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 12px;">
+                        </div>
+
+                        <div class="grupo-input">
+                            <label for="horario">Horário do Atendimento</label>
+                            <input type="time" id="horario" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 12px;">
+                        </div>
+
+                        <div class="grupo-input">
+                            <label for="telefone">Telefone</label>
+                            <input type="tel" id="telefone" placeholder="(00) 00000-0000" required>
+                        </div>
+
+                        <div class="grupo-input">
+                            <label for="localizacao">Localização/Região</label>
+                            <input type="text" id="localizacao" placeholder="Ex: Bairro, Cidade" required>
+                        </div>
+
+                        <div class="grupo-input">
+                            <label for="prontuario">Número do Prontuário</label>
+                            <input type="text" id="prontuario" placeholder="Ex: PRONT-001" required>
+                        </div>
+
+                        <div class="botoes-formulario">
+                            <button type="button" class="btn-cancelar" onclick="window.location.href='index.html'">Cancelar</button>
+                            <button type="submit" class="btn-confirmar">Confirmar Agendamento</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../src/js/clinica-config.js"></script>
+    <script src="../../src/js/web-common.js"></script>
+    <script>
+        function validarHorario(dataInput, horario) {
+            const data = new Date(dataInput + 'T00:00:00'); 
+            const diaSemana = data.getDay(); // 0=Dom, 1=Seg, ..., 6=Sab
+            const hora = parseInt(horario.split(':')[0]);
+
+            if (diaSemana === 0) return false; // Domingo: Fechado
+            if (diaSemana === 6) return hora >= 8 && hora < 14; // Sábado: 08-14
+            return hora >= 8 && hora < 20; // Seg-Sex: 08-20
+        }
+
+        window.onload = async () => {
+            const sessao = await WebApp.initPagina({ tipos: ['estagiario'], navAtivo: 'agendar_consulta.html' });
+            if (!sessao) return;
+
+            const inputData = document.getElementById('data-consulta');
+            const hoje = new Date();
+            inputData.value = `${String(hoje.getDate()).padStart(2, '0')}/${String(hoje.getMonth() + 1).padStart(2, '0')}/${hoje.getFullYear()}`;
+
+            inputData.addEventListener('input', (e) => {
+                let v = e.target.value.replace(/\D/g, "");
+                if (v.length >= 5) v = v.replace(/^(\d{2})(\d{2})(\d{1,4}).*/, "$1/$2/$3");
+                else if (v.length >= 3) v = v.replace(/^(\d{2})(\d{1,2}).*/, "$1/$2");
+                e.target.value = v;
+            });
+
+            const selectPaciente = document.getElementById('paciente');
+            try {
+                const res = await fetch('http://localhost:3000/api/usuarios?cargo=paciente');
+                if (res.ok) {
+                    const pacs = await res.json();
+                    selectPaciente.innerHTML = '<option value="" disabled selected>Selecione o paciente</option>' + 
+                        pacs.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+                }
+            } catch (e) { selectPaciente.innerHTML = '<option disabled>Erro ao carregar</option>'; }
+
+            document.getElementById('form-agendamento').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const pId = document.getElementById('paciente').value;
+                const dBr = document.getElementById('data-consulta').value;
+                const h = document.getElementById('horario').value;
+
+                if (!pId || dBr.length < 10 || !h) {
+                    alert('Preencha todos os campos corretamente.');
+                    return;
+                }
+
+                const dMySql = `${dBr.split('/')[2]}-${dBr.split('/')[1]}-${dBr.split('/')[0]}`;
+                
+                if (!validarHorario(dMySql, h)) {
+                    alert("Horário indisponível! \nSeg-Sex: 08h-20h | Sáb: 08h-14h | Dom: Fechado.");
+                    return;
+                }
+
+                try {
+                    const res = await fetch('http://localhost:3000/api/agendar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ estagiario_id: sessao.id, paciente_id: pId, data_consulta: dMySql, horario: h })
+                    });
+                    if (res.ok) {
+                        alert('Agendado com sucesso!');
+                        window.location.href = 'index.html';
+                    } else {
+                        const err = await res.json();
+                        alert('Erro: ' + err.erro);
+                    }
+                } catch (err) { alert('Erro de conexão.'); }
+            });
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Início - Paciente | Clínica Horizonte</title>
+    <link rel="stylesheet" href="../../src/css/paciente/global.css">
+    <link rel="stylesheet" href="../../src/css/paciente/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">CH</div>
+            <hr class="linha-menu">
+            <nav>
+                <a href="index.html" class="active"><i class="fa-solid fa-house"></i> Início</a>
+                <a href="check-in.html"><i class="fa-solid fa-calendar-check"></i> Check-in</a>
+                <a href="consultas.html"><i class="fa-solid fa-clipboard-list"></i> Consultas</a>
+                <a href="exames.html"><i class="fa-solid fa-file-medical"></i> Exames</a>
+                <a href="materiais.html"><i class="fa-solid fa-book-open"></i> Materiais</a>
+                <a href="configuracoes.html"><i class="fa-solid fa-gear"></i> Configurações</a>
+            </nav>
+            <hr class="linha-menu">
+            <div class="sidebar-footer">
+                <a href="/index.html?logout=1"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="user-info">
+                    <div class="user-avatar" id="avatar-letra">L</div>
+                    <div>
+                        <p>Bem-vindo(a)!</p>
+                        <h2 id="nome-usuario">Carregando...</h2>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <a href="check-in.html" class="icon-btn" title="Check-in"><i class="fa-solid fa-calendar-check"></i></a>
+                    <a href="exames.html" class="icon-btn" title="Exames"><i class="fa-regular fa-bell"></i></a>
+                </div>
+            </header>
+
+            <section class="dashboard-grid">
+                <div class="section-container">
+                    <h3>Sua próxima consulta</h3>
+                    <div class="card-proxima-consulta" id="card-proxima">
+                        <p style="color: #64748b;">Buscando agendamentos...</p>
+                    </div>
+                </div>
+
+                <div class="section-container">
+                    <h3>Materiais de apoio</h3>
+                    <div class="materiais-flex" id="materiais-preview"></div>
+                    <a href="materiais.html" class="ver-todas-link">Ver todos os materiais →</a>
+                </div>
+
+                <div class="section-container full-width">
+                    <h3>Histórico recente</h3>
+                    <div class="historico-lista" id="historico-recente"></div>
+                    <a href="consultas.html" class="ver-todas-link">Ver histórico completo com paginação →</a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../src/js/clinica-config.js"></script>
+    <script src="../../src/js/web-common.js"></script>
+    <script>
+        let sessaoAtiva = null;
+
+
+        const montarProximaVisual = (proxima) => {
+            const el = document.getElementById('card-proxima');
+            if (!proxima) {
+                el.innerHTML = `
+                    <div style="background: white; padding: 20px; border-radius: 16px; text-align: center; color: #64748b; border: 1px solid #e2e8f0; width: 100%;">
+                        <p style="margin: 0; font-weight: 500;">Nenhuma consulta agendada para os próximos dias.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const partesData = proxima.data_consulta.split('-');
+            const dataBr = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+            const hora = proxima.horario.slice(0, 5);
+
+            let acoesHtml = '';
+            let labelStatus = 'Agendada';
+            let corStatus = '#f59e0b';
+
+            if (proxima.status === 'agendada') {
+                labelStatus = 'Aguardando Confirmação';
+                acoesHtml = `
+                    <div style="margin-top: 15px; display: flex; gap: 10px; width: 100%;">
+                        <button id="btn-confirmar-home" style="flex: 1; padding: 10px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Confirmar</button>
+                        <button id="btn-cancelar-home" style="padding: 10px; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Cancelar</button>
+                    </div>
+                `;
+            } else if (proxima.status === 'confirmado') {
+                labelStatus = 'Confirmada';
+                corStatus = '#10b981';
+            }
+
+            el.innerHTML = `
+                <div style="background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); width: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="font-size: 13px; font-weight: bold; color: ${corStatus}; background: ${corStatus}15; padding: 4px 8px; border-radius: 6px;">${labelStatus.toUpperCase()}</span>
+                        <span style="color: #64748b; font-size: 14px;"><i class="fa-solid fa-door-open"></i> Sala de Atendimento</span>
+                    </div>
+                    <h4 style="margin: 0 0 6px 0; color: #1e293b; font-size: 18px;">Consulta com Estagiário(a)</h4>
+                    <p style="margin: 0 0 12px 0; color: #475569; font-weight: 500; font-size: 15px;"><i class="fa-solid fa-user-user"></i> Dr. ${proxima.estagiario_name || proxima.estagiario_nome}</p>
+                    <div style="display: flex; gap: 15px; color: #64748b; font-size: 14px; background: #f8fafc; padding: 10px; border-radius: 8px;">
+                        <span><i class="fa-regular fa-calendar"></i> ${dataBr}</span>
+                        <span><i class="fa-regular fa-clock"></i> ${hora}</span>
+                    </div>
+                    ${acoesHtml}
+                </div>
+            `;
+
+
+            if (proxima.status === 'agendada') {
+                document.getElementById('btn-confirmar-home').onclick = () => alterarStatusConsultaHome(proxima.id, 'confirmado');
+                document.getElementById('btn-cancelar-home').onclick = () => {
+                    if (confirm('Deseja realmente cancelar esta consulta?')) {
+                        alterarStatusConsultaHome(proxima.id, 'cancelado');
+                    }
+                };
+            }
+        };
+
+        const alterarStatusConsultaHome = async (id, novoStatus) => {
+            try {
+                const resposta = await fetch(`http://localhost:3000/api/consultas/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: novoStatus })
+                });
+                if (resposta.ok) {
+                    alert(novoStatus === 'confirmado' ? 'Consulta confirmada!' : 'Consulta cancelada com sucesso.');
+                    await carregarDadosDashboard();
+                }
+            } catch (err) {
+                alert('Erro ao atualizar status da consulta.');
+            }
+        };
+
+        const montarHistoricoVisual = (historico) => {
+            const el = document.getElementById('historico-recente');
+            if (historico.length === 0) {
+                el.innerHTML = '<p style="color: #64748b; text-align: center; padding: 15px;">Nenhum histórico de atendimento disponível.</p>';
+                return;
+            }
+
+            el.innerHTML = historico.map(c => {
+                const partesData = c.data_consulta.split('-');
+                const dataBr = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+                
+                let badgeCor = '#64748b';
+                if (c.status === 'realizada') badgeCor = '#3b82f6';
+                if (c.status === 'cancelado') badgeCor = '#ef4444';
+
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #f1f5f9;">
+                        <div>
+                            <strong style="display: block; color: #1e293b; font-size: 15px;">Atendimento Clínico</strong>
+                            <span style="color: #64748b; font-size: 13px;">Com Dr(a). ${c.estagiario_name || c.estagiario_nome} • ${dataBr} às ${c.horario.slice(0,5)}</span>
+                        </div>
+                        <span style="font-size: 12px; font-weight: bold; color: ${badgeCor}; background: ${badgeCor}12; padding: 4px 8px; border-radius: 6px; text-transform: uppercase;">${c.status}</span>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        const carregarDadosDashboard = async () => {
+            try {
+                const resposta = await fetch(`http://localhost:3000/api/consultas/paciente/${sessaoAtiva.id}`);
+                if (resposta.ok) {
+                    const consultas = await resposta.json();
+
+                    const hojeFormato = new Date().toISOString().slice(0, 10);
+                    const horaFormato = new Date().toTimeString().slice(0, 5);
+
+
+                    const futuras = consultas
+                        .filter(c => c.status !== 'cancelado' && (c.data_consulta > hojeFormato || (c.data_consulta === hojeFormato && c.horario.slice(0,5) >= horaFormato)))
+                        .sort((a, b) => new Date(a.data_consulta + 'T' + a.horario) - new Date(b.data_consulta + 'T' + b.horario));
+
+
+                    const passadas = consultas
+                        .filter(c => c.status === 'realizada' || c.status === 'cancelado' || c.data_consulta < hojeFormato)
+                        .slice(0, 3);
+
+                    montarProximaVisual(futuras[0] || null);
+                    montarHistoricoVisual(passadas);
+                }
+            } catch (err) {
+                console.error("Erro ao carregar dashboard:", err);
+            }
+        };
+
+        window.onload = async () => {
+
+            sessaoAtiva = await WebApp.initPagina({ tipos: ['paciente'], navAtivo: 'index.html' });
+            if (!sessaoAtiva) return;
+
+            document.getElementById('nome-usuario').textContent = sessaoAtiva.nome;
+            document.getElementById('avatar-letra').textContent = sessaoAtiva.nome.charAt(0).toUpperCase();
+
+
+            document.getElementById('materiais-preview').innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; flex: 1; text-align: left;">
+                    <div style="color: #2a75f3; font-size: 24px; margin-bottom: 10px;"><i class="fa-solid fa-file-pdf"></i></div>
+                    <h4 style="margin: 0 0 4px 0; color: #1e293b; font-size: 14px;">Guia de Introdução à Terapia</h4>
+                    <p style="margin: 0; color: #64748b; font-size: 12px;">Orientações para as primeiras sessões.</p>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; flex: 1; text-align: left;">
+                    <div style="color: #2a75f3; font-size: 24px; margin-bottom: 10px;"><i class="fa-solid fa-circle-play"></i></div>
+                    <h4 style="margin: 0 0 4px 0; color: #1e293b; font-size: 14px;">Exercício de Respiração</h4>
+                    <p style="margin: 0; color: #64748b; font-size: 12px;">Áudio prático para controle de ansiedade.</p>
+                </div>
+            `;
+
+            await carregarDadosDashboard();
+        };
+    </script>
+</body>
+</html>

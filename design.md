@@ -1,4 +1,6 @@
-# Design System — Clínica Psiquiátrica (telas_web)
+# Design System — Clínica Horizonte (telas_web)
+
+> **Estrutura:** entrada `index.html` (login) · views em `views/{admin,paciente,estagiario}/` · CSS/JS em `src/css` e `src/js` · ver `README.md`.
 
 Documento extraído do código em `src/telas_web`. Descreve identidade visual, estrutura de layout, componentes reutilizáveis e organização das telas por perfil de usuário.
 
@@ -8,8 +10,9 @@ Documento extraído do código em `src/telas_web`. Descreve identidade visual, e
 
 | Item | Valor |
 |------|--------|
-| **Nome** | Clínica Psiquiátrica |
-| **Sigla / logo** | `CP` (avatar textual) |
+| **Nome** | Clínica Horizonte |
+| **Razão social** | Centro Integrado de Saúde Mental Horizonte Ltda. |
+| **Sigla / logo** | `CH` (avatar textual) |
 | **Idioma** | `pt-BR` |
 | **Stack UI** | HTML estático + CSS (sem framework CSS) |
 | **Ícones** | [Font Awesome](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/) (versões 6.0.0 a 6.5.1 conforme a tela) |
@@ -357,17 +360,15 @@ Implementação **limitada**:
 
 ## 13. Relação com o app mobile (`src/services/theme.js`)
 
-O app React Native (Expo) está alinhado a este documento:
+O projeto React Native usa paleta **diferente** (verde-água):
 
-| Token | Hex |
-|-------|-----|
-| primary | `#2a75f3` |
-| background (atendente/paciente) | `#e8efff` |
-| background (admin) | `#f1f5f9` |
-| accent | `#40E0D0` |
-| sidebar admin | `#1e293b` |
+| Token mobile | Hex |
+|--------------|-----|
+| primary | `#117d6c` |
+| surface | `#f3faf8` |
+| text | `#1d1d1d` |
 
-Fonte: **Inter** (`@expo-google-fonts/inter`). Componentes compartilhados em `src/components/` e estilos em `src/services/themeStyles.js`.
+As **telas_web** priorizam azul (`#2a75f3`) e fundo lavanda (`#e8efff`). Unificar tokens exigiria alinhar web e mobile em um único arquivo de tema compartilhado.
 
 ---
 

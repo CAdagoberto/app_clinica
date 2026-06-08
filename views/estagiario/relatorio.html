@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Sessão - Clínica Horizonte</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> 
+    <link rel="stylesheet" href="../../src/css/estagiario/global.css">
+    <link rel="stylesheet" href="../../src/css/estagiario/escrever_relat.css">
+</head>
+<body>
+    <div class="app-container">
+        
+        <aside class="sidebar">
+            <div class="logo">CH</div>
+            <hr class="linha-menu">
+            <nav>
+                <a href="index.html"><i class="fa-solid fa-house"></i> Início</a>
+                <a href="agendar_consulta.html"><i class="fa-regular fa-calendar-days"></i> Minha Agenda</a>
+                <a href="meus_pacientes.html"><i class="fa-solid fa-users"></i> Meus Pacientes</a>
+                <a href="prontuarios.html" class="active"><i class="fa-solid fa-file-medical"></i> Prontuários</a>
+                <a href="avaliacao.html"><i class="fa-solid fa-graduation-cap"></i> Avaliação Acadêmica</a>
+            </nav>
+            <hr class="linha-menu">
+            <div class="sidebar-footer">
+                <a href="/index.html?logout=1"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+            </div>
+        </aside>
+
+        <main class="main-content tela-relatorio">
+            <a href="#" onclick="history.back(); return false;" class="btn-voltar">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+
+            <div id="container-selecao-paciente" style="display: none; margin-bottom: 20px;">
+                <div class="card-selecao-paciente">
+                    <label>Selecione o Paciente</label>
+                    <select id="select-paciente">
+                        <option value="">Escolha um paciente...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card-paciente" id="card-paciente-preenchido">
+                <div class="perfil-principal">
+                    <div class="avatar-perfil" id="avatar-paciente">-</div>
+                    <div class="nome-idade">
+                        <h3 id="nome-paciente">Carregando...</h3>
+                        <span id="idade-paciente">Acompanhamento Regular</span>
+                    </div>
+                </div>
+
+                <div class="info-sessao">
+                    <div class="item-info">
+                        <label>Sessão Atual</label>
+                        <span id="sessao-atual">--/10</span>
+                    </div>
+                    <div class="item-info">
+                        <label>Último Atendimento</label>
+                        <span id="ultimo-atendimento">Sem registros</span>
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="linha-separacao">
+
+            <div class="cabecalho-instrucao">
+                <h2>Novo Relatório</h2>
+                <p>Preencha os campos abaixo com os detalhes da sessão para a orientação do supervisor.</p>
+            </div>
+
+            <div class="bloco-relatorio">
+                <label for="relatorio-resumo">Resumo do Atendimento</label>
+                <textarea id="relatorio-resumo" class="textarea-linhas" placeholder="Descreva aqui o que aconteceu na sessão..."></textarea>
+            </div>
+
+            <div class="anexo-container">
+                <input type="file" id="upload-clipe" hidden>
+                <label for="upload-clipe" class="btn-clipe">
+                    <span>📎</span> Anexar Material
+                </label>
+            </div>
+
+            <div class="bloco-duvidas">
+                <label for="relatorio-duvidas">Dúvidas para Supervisão</label>
+                <textarea id="relatorio-duvidas" class="textarea-linhas" placeholder="Tem alguma dúvida sobre este caso?"></textarea>
+            </div>
+
+            <div class="rodape-acoes">
+                <button class="btn-cancelar" onclick="history.back();">Cancelar</button>
+                <div class="finalizacao-relatorio">
+                    <button class="btn-rascunho" id="btn-rascunho">Salvar Rascunho</button>
+                    <button class="btn-enviar-final" id="btn-enviar">Enviar Relatório</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../../src/js/clinica-config.js"></script>
+    <script src="../../src/js/web-common.js"></script>
+    <script>
+        let sessao = null;
+        let pacienteSelecionadoId = null;
+        let listaPacientesCompleta = [];
+
+        window.onload = async () => {
+            sessao = await WebApp.initPagina({ tipos: ['estagiario'], navAtivo: 'prontuarios.html' });
+            if (!sessao) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const pacienteNomeQuery = urlParams.get('paciente');
+
+            const carregarPacientesDoBanco = async () => {
+                try {
+                    const resposta = await fetch('http://localhost:3000/api/usuarios?cargo=paciente');
+                    if (resposta.ok) {
+                        listaPacientesCompleta = await resposta.json();
+                        
+                        const selectElement = document.getElementById('select-paciente');
+                        listaPacientesCompleta.forEach(p => {
+                            const option = document.createElement('option');
+                            option.value = p.id;
+                            option.textContent = p.nome;
+                            selectElement.appendChild(option);
+                        });
+                    }
+                } catch (erro) {
+                    console.error("Erro ao carregar lista de pacientes:", erro);
+                }
+            };
+
+            await carregarPacientesDoBanco();
+
+            const carregarUltimoAtendimento = async (nomeDoPaciente) => {
+                try {
+                    const resposta = await fetch(`http://localhost:3000/api/consultas/${sessao.id}`);
+                    if (resposta.ok) {
+                        const consultas = await resposta.json();
+                        const historicoFiltrado = consultas.filter(c => c.paciente_nome === nomeDoPaciente);
+                        
+                        if (historicoFiltrado.length > 0) {
+                            const ultimaConsulta = historicoFiltrado[historicoFiltrado.length - 1];
+                            const dataBr = ultimaConsulta.data_consulta.split('-').reverse().join('/');
+                            document.getElementById('ultimo-atendimento').textContent = `${dataBr} às ${ultimaConsulta.horario.slice(0,5)}`;
+                            document.getElementById('sessao-atual').textContent = `${historicoFiltrado.length}/10`;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Erro ao carregar último atendimento:", err);
+                }
+            };
+
+
+            if (pacienteNomeQuery) {
+                const pacienteEncontrado = listaPacientesCompleta.find(p => p.nome === pacienteNomeQuery);
+                if (pacienteEncontrado) {
+                    pacienteSelecionadoId = pacienteEncontrado.id;
+                    exibirDadosPaciente(pacienteEncontrado.nome);
+                    await carregarUltimoAtendimento(pacienteEncontrado.nome);
+                }
+            } else {
+                document.getElementById('card-paciente-preenchido').style.display = 'none';
+                document.getElementById('container-selecao-paciente').style.display = 'block';
+            }
+
+
+            document.getElementById('select-paciente').addEventListener('change', async function() {
+                if (this.value) {
+                    pacienteSelecionadoId = this.value;
+                    const objetoPaciente = listaPacientesCompleta.find(p => p.id == pacienteSelecionadoId);
+                    document.getElementById('container-selecao-paciente').style.display = 'none';
+                    document.getElementById('card-paciente-preenchido').style.display = 'flex';
+                    exibirDadosPaciente(objetoPaciente.nome);
+                    await carregarUltimoAtendimento(objetoPaciente.nome);
+                }
+            });
+
+            function exibirDadosPaciente(nome) {
+                document.getElementById('nome-paciente').textContent = nome;
+                document.getElementById('avatar-paciente').textContent = nome.charAt(0).toUpperCase();
+            }
+
+
+            const enviarRelatorioClinico = async (statusEscolhido) => {
+                const resumo = document.getElementById('relatorio-resumo').value.trim();
+                const duvidas = document.getElementById('relatorio-duvidas').value.trim();
+
+                if (!pacienteSelecionadoId) {
+                    alert("Selecione um paciente para validar o relatório.");
+                    return;
+                }
+
+                if (!resumo) {
+                    alert("O resumo do atendimento não pode ficar em branco.");
+                    return;
+                }
+
+                const payload = {
+                    estagiario_id: sessao.id,
+                    paciente_id: pacienteSelecionadoId,
+                    resumo: resumo,
+                    duvidas: duvidas,
+                    status: statusClass(statusEscolhido)
+                };
+
+                try {
+                    const resposta = await fetch('http://localhost:3000/api/relatorios', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (resposta.ok) {
+                        alert(statusEscolhido === 'rascunho' ? 'Rascunho salvo temporariamente!' : 'Relatório enviado ao supervisor com sucesso!');
+                        window.location.href = 'prontuarios.html';
+                    } else {
+                        alert("Falha ao salvar dados no servidor.");
+                    }
+                } catch (erro) {
+                    alert("Erro ao conectar com a API.");
+                }
+            };
+
+            function statusClass(status) {
+                return status === 'rascunho' ? 'rascunho' : 'enviado';
+            }
+
+            document.getElementById('btn-rascunho').onclick = () => enviarRelatorioClinico('rascunho');
+            document.getElementById('btn-enviar').onclick = () => enviarRelatorioClinico('enviado');
+        };
+    </script>
+</body>
+</html>

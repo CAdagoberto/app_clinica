@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Clínica Horizonte</title>
+    <link rel="stylesheet" href="../../src/css/admin/global.css">
+    <link rel="stylesheet" href="../../src/css/admin/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo-admin">CH</div>
+            <hr class="linha-menu">
+            <nav>
+                <a href="index.html" class="active"><i class="fa-solid fa-chart-line"></i> Visão Geral</a>
+                <a href="estagiarios.html"><i class="fa-solid fa-user-graduate"></i> Estagiários</a>
+                <a href="consultas.html"><i class="fa-solid fa-calendar-check"></i> Consultas</a>
+                <a href="agendar_consulta.html"><i class="fa-regular fa-calendar-plus"></i> Agendar Consulta</a>
+                <a href="prontuarios.html"><i class="fa-solid fa-file-medical"></i> Prontuários</a>
+                <a href="salas.html"><i class="fa-solid fa-door-open"></i> Salas</a>
+            </nav>
+            <hr class="linha-menu">
+            <div class="sidebar-footer">
+                <a href="/index.html?logout=1"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="user-info">
+                    <div class="admin-avatar" id="avatar-letra">A</div>
+                    <div>
+                        <p>Painel de Gestão</p>
+                        <h2 id="nome-usuario">Administração Central</h2>
+                    </div>
+                </div>
+            </header>
+
+            <section class="kpi-row" id="kpi-container" style="display: flex; gap: 20px; margin-bottom: 20px;"></section>
+
+            <section class="dashboard-grid">
+                <div class="section-container">
+                    <div class="header-com-botao">
+                        <h3>Estagiários Ativos</h3>
+                        <a href="estagiarios.html" class="btn-text">Gerenciar</a>
+                    </div>
+                    <div class="painel-estagiarios">
+                        <div class="lista-estagiarios-resumo" id="lista-estagiarios-resumo"></div>
+                    </div>
+                </div>
+
+                <div class="section-container">
+                    <h3>Gestão Rápida</h3>
+                    <div class="materiais-flex" style="display: flex; gap: 15px;">
+                        <div class="card-material" style="flex:1; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;">
+                            <div class="icone-destaque"><i class="fa-solid fa-calendar-plus"></i></div>
+                            <h4>Nova Consulta</h4>
+                            <a href="agendar_consulta.html" class="btn-admin-secundario">Agendar</a>
+                        </div>
+                        <div class="card-material" style="flex:1; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center;">
+                            <div class="icone-destaque"><i class="fa-solid fa-user-graduate"></i></div>
+                            <h4>Estagiários</h4>
+                            <a href="estagiarios.html" class="btn-admin-secundario">Ver equipe</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../src/js/clinica-config.js"></script>
+    <script src="../../src/js/web-common.js"></script>
+    <script>
+        const CORES_AVATAR = ['#3b82f6', '#8b5cf6', '#06b6d4', '#f59e0b'];
+
+        const iniciaisNome = (nome) =>
+            nome.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase();
+
+        const contarConsultasHoje = (estagiarioId, consultas) =>
+            (consultas || []).filter((c) => c.estagiario_id === estagiarioId).length;
+
+        const renderizarEstagiarioResumo = (estagiario, indice, consultasHoje) => {
+            const consultas = contarConsultasHoje(estagiario.id, consultasHoje);
+            const cor = CORES_AVATAR[indice % CORES_AVATAR.length];
+
+            return `
+                <article class="card-estagiario-resumo">
+                    <div class="est-avatar" style="--cor-avatar: ${cor}">${iniciaisNome(estagiario.nome)}</div>
+                    <div class="est-corpo">
+                        <div class="est-topo">
+                            <strong>${estagiario.nome}</strong>
+                            <span class="badge-ativo"><i class="fa-solid fa-circle"></i> Ativo</span>
+                        </div>
+                        <p class="est-email">
+                            <i class="fa-regular fa-envelope"></i>
+                            ${estagiario.email || 'E-mail não configurado'}
+                        </p>
+                        <div class="est-chips">
+                            <span><i class="fa-solid fa-id-card"></i> Mat. ${estagiario.matricula || '—'}</span>
+                            <span><i class="fa-solid fa-book-open"></i> ${estagiario.estagio_atual || 'Estágio não informado'}</span>
+                        </div>
+                    </div>
+                    <div class="est-metrica">
+                        <span class="est-metrica-num">${consultas}</span>
+                        <span class="est-metrica-label">consultas hoje</span>
+                    </div>
+                </article>
+            `;
+        };
+
+        window.onload = async function () {
+            const sessao = await WebApp.initPagina({ tipos: ['admin'], navAtivo: 'index.html' });
+            if (!sessao) return;
+
+            try {
+                const response = await fetch('http://localhost:3000/api/dashboard');
+                const dash = await response.json();
+
+                const kpiContainer = document.getElementById('kpi-container');
+                kpiContainer.innerHTML = dash.kpis
+                    .filter((k) => k.titulo !== 'Salas Ocupadas')
+                    .map((k) => `
+                        <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; flex: 1; text-align: center;">
+                            <i class="fa-solid ${k.icone}" style="font-size: 20px; color: #72a1f8; margin-bottom: 8px;"></i>
+                            <h3 style="margin: 0; font-size: 22px;">${k.valor}</h3>
+                            <p style="margin: 0; color: #64748b; font-size: 13px;">${k.titulo}</p>
+                        </div>
+                    `).join('');
+
+                const estContainer = document.getElementById('lista-estagiarios-resumo');
+                estContainer.innerHTML = dash.estagiarios.length > 0
+                    ? dash.estagiarios.map((e, i) => renderizarEstagiarioResumo(e, i, dash.consultasHoje)).join('')
+                    : `
+                        <div class="estagiarios-vazio">
+                            <i class="fa-solid fa-user-graduate"></i>
+                            <p>Nenhum estagiário ativo no momento.</p>
+                            <a href="estagiarios.html" class="btn-admin-secundario">Cadastrar estagiário</a>
+                        </div>
+                    `;
+
+            } catch (err) {
+                console.error("Erro ao carregar dados do Dashboard:", err);
+            }
+        };
+    </script>
+</body>
+</html>

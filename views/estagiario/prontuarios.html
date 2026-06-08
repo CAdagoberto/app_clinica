@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Prontuários</title>
+    <link rel="stylesheet" href="../../src/css/estagiario/global.css">
+    <link rel="stylesheet" href="../../src/css/estagiario/prontuariosbtn.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>  
+<body>
+    <div class="app-container">
+        
+        <aside class="sidebar">
+            <div class="logo">CH</div>
+
+            <hr class="linha-menu">   
+            <nav>
+                <a href="index.html"><i class="fa-solid fa-house"></i> Início</a>
+                <a href="agendar_consulta.html"><i class="fa-regular fa-calendar-days"></i> Minha Agenda</a>
+                <a href="meus_pacientes.html"><i class="fa-solid fa-users"></i> Meus Pacientes</a>
+                <a href="#" class="active"><i class="fa-solid fa-file-medical"></i> Prontuários</a>
+                <a href="avaliacao.html"><i class="fa-solid fa-graduation-cap"></i> Avaliação Acadêmica</a>
+            </nav>
+            <hr class="linha-menu">
+            
+            <div class="sidebar-footer">
+                <a href="/index.html?logout=1"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+            </div>
+        </aside>
+
+       <main class="main-content">
+        <a href="index.html" class="btn-voltar">
+            <i class="fa-solid fa-arrow-left"></i> Voltar
+        </a>
+        <h1 class="titulo-pagina">Controle de Prontuários</h1>
+        <p class="subtitulo-pagina">Selecione um paciente para acessar ou atualizar o prontuário clínico.<br>Você pode ter até 3 pacientes ativos.</p>
+
+        <div class="caixa-tabela-relatorio">
+            <div class="header-interno-tabela">
+                <i class="fa-solid fa-clipboard-user"></i> 
+                <h3 class="titulo-tabela">Meus Atendimentos</h3>
+            </div>
+            
+            <div class="header-tabela">
+                <span>Nome do Paciente</span>
+                <span>Sessão Atual</span>
+                <span>Último Atendimento</span>
+                <span>Supervisor</span>
+                <span>Status do Prontuário</span>
+                <span>Ações</span>
+            </div>
+            
+            <div id="lista-prontuarios">
+                <p style="text-align: center; padding: 20px; color: #64748b;">Carregando prontuários...</p>
+            </div>
+
+        </div>
+    </main>
+</div> 
+
+    <script src="../../src/js/clinica-config.js"></script>
+    <script src="../../src/js/web-common.js"></script>
+    <script>
+        window.onload = async () => {
+            const sessao = await WebApp.initPagina({ tipos: ['estagiario'], navAtivo: 'prontuarios.html' });
+            if (!sessao) return;
+
+            const container = document.getElementById('lista-prontuarios');
+
+            try {
+                const resposta = await fetch(`http://localhost:3000/api/consultas/${sessao.id}`);
+                
+                if (resposta.ok) {
+                    const consultas = await resposta.json();
+
+                    if (consultas.length === 0) {
+                        container.innerHTML = '<p style="text-align: center; padding: 20px; color: #64748b;">Nenhum paciente agendado até o momento.</p>';
+                        return;
+                    }
+
+                    const pacientesUnicos = new Map();
+                    consultas.forEach(c => {
+                        if (!pacientesUnicos.has(c.paciente_nome) || new Date(c.data_consulta) > new Date(pacientesUnicos.get(c.paciente_nome).data_consulta)) {
+                            pacientesUnicos.set(c.paciente_nome, c);
+                        }
+                    });
+
+                    const html = Array.from(pacientesUnicos.values()).map(p => {
+                        const partes = p.data_consulta.split('-');
+                        const dataBr = `${partes[2]}/${partes[1]}/${partes[0]}`;
+
+                        return `
+                            <div class="linha-paciente">
+                                <span class="nome">${p.paciente_nome}</span>
+                                <span style="color: #94a3b8;">--/10</span> 
+                                <span>${dataBr}</span>
+                                <span style="color: #94a3b8;">Aguardando Vinculação</span>
+                                <span class="status-pendente">Pendente</span>
+                                <div class="acoes">
+                                    <a href="relatorio.html?paciente=${encodeURIComponent(p.paciente_nome)}" class="btn-tabela iniciar">
+                                        Preencher
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p style="text-align: center; color: red;">Erro ao carregar os dados.</p>';
+                }
+            } catch (erro) {
+                container.innerHTML = '<p style="text-align: center; color: red;">Erro de conexão com o servidor Node.js.</p>';
+            }
+        };
+    </script>
+</body>
+</html>
