@@ -127,6 +127,8 @@
                             resumo: prontuario.resumo,
                             duvidas: prontuario.duvidas
                         }];
+                    } else {
+                        throw new Error('Prontuário não encontrado');
                     }
                 } else {
                     // Se for estagiário, busca suas consultas normalmente
@@ -151,100 +153,99 @@
 
                 const consultasPaciente = todasConsultas.sort((a, b) => new Date(a.data_consulta + 'T' + a.horario) - new Date(b.data_consulta + 'T' + b.horario));
 
-                    const hoje = new Date();
-                    const dataHojeFormato = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
-                    const horaAtual = hoje.toTimeString().slice(0, 5);
+                const hoje = new Date();
+                const dataHojeFormato = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}-${String(hoje.getDate()).padStart(2, '0')}`;
+                const horaAtual = hoje.toTimeString().slice(0, 5);
 
-                    let realizadas = 0;
-                    let agendadas = 0;
-                    let htmlSessoes = '';
+                let realizadas = 0;
+                let agendadas = 0;
+                let htmlSessoes = '';
 
-                    consultasPaciente.forEach((c, index) => {
-                        const numSessao = index + 1;
-                        
-                        const partesData = c.data_consulta.split('-');
-                        const dataBr = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
-                        
-                        let statusClass, badgeClass, badgeText, acaoBtn;
-
-                        if (c.data_consulta < dataHojeFormato || (c.data_consulta === dataHojeFormato && c.horario.slice(0,5) < horaAtual)) {
-                            statusClass = 'concluida';
-                            badgeClass = 'b-concluida';
-                            badgeText = 'Concluída';
-                            acaoBtn = `<button class="btn-visualizar"><i class="fa-regular fa-eye"></i> Visualizar</button>`;
-                            realizadas++;
-                        } else if (c.data_consulta === dataHojeFormato) {
-                            statusClass = 'proxima';
-                            badgeClass = 'b-proxima';
-                            badgeText = 'Próxima Sessão';
-                            acaoBtn = `<button class="btn-iniciar-atendimento"><i class="fa-solid fa-play"></i> Iniciar Evolução</button>`;
-                            agendadas++;
-                        } else {
-                            statusClass = 'futura';
-                            badgeClass = 'b-futura';
-                            badgeText = 'Agendada';
-                            acaoBtn = ''; 
-                            agendadas++;
-                        }
-
-                        htmlSessoes += `
-                            <div class="card-sessao ${statusClass}">
-                                <div class="sessao-esquerda">
-                                    <div class="sessao-numero">${numSessao}</div>
-                                    <div class="sessao-info-bloco">
-                                        <div class="sessao-titulo-linha">
-                                            <h4>Sessão ${numSessao}</h4>
-                                            <span class="badge-status ${badgeClass}">${badgeText}</span>
-                                        </div>
-                                        <p class="sessao-subtexto"><i class="fa-regular fa-calendar"></i> ${dataBr} às ${c.horario.slice(0,5)}</p>
-                                    </div>
-                                </div>
-                                ${acaoBtn}
-                            </div>
-                        `;
-                    });
-
-                    document.getElementById('linha-do-tempo-sessoes').innerHTML = htmlSessoes;
-
-                    const totalPlanejado = Math.max(10, consultasPaciente.length);
-                    const progressoTratamento = Math.round((realizadas / totalPlanejado) * 100);
+                consultasPaciente.forEach((c, index) => {
+                    const numSessao = index + 1;
                     
-                    document.getElementById('porcentagem-texto').textContent = `${progressoTratamento}%`;
-                    document.getElementById('barra-preenchimento').style.width = `${progressoTratamento}%`;
+                    const partesData = c.data_consulta.split('-');
+                    const dataBr = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+                    
+                    let statusClass, badgeClass, badgeText, acaoBtn;
 
-                    const dataInicioPartes = consultasPaciente[0].data_consulta.split('-');
-                    const dataInicioBr = `${dataInicioPartes[2]}/${dataInicioPartes[1]}/${dataInicioPartes[0]}`;
+                    if (c.data_consulta < dataHojeFormato || (c.data_consulta === dataHojeFormato && c.horario.slice(0,5) < horaAtual)) {
+                        statusClass = 'concluida';
+                        badgeClass = 'b-concluida';
+                        badgeText = 'Concluída';
+                        acaoBtn = `<button class="btn-visualizar"><i class="fa-regular fa-eye"></i> Visualizar</button>`;
+                        realizadas++;
+                    } else if (c.data_consulta === dataHojeFormato) {
+                        statusClass = 'proxima';
+                        badgeClass = 'b-proxima';
+                        badgeText = 'Próxima Sessão';
+                        acaoBtn = `<button class="btn-iniciar-atendimento"><i class="fa-solid fa-play"></i> Iniciar Evolução</button>`;
+                        agendadas++;
+                    } else {
+                        statusClass = 'futura';
+                        badgeClass = 'b-futura';
+                        badgeText = 'Agendada';
+                        acaoBtn = ''; 
+                        agendadas++;
+                    }
 
-                    const proximaConsulta = consultasPaciente.find(c => c.data_consulta >= dataHojeFormato && (c.data_consulta > dataHojeFormato || c.horario.slice(0,5) >= horaAtual));
-                    const proximaDataBr = proximaConsulta ? proximaConsulta.data_consulta.split('-').reverse().join('/') + ' às ' + proximaConsulta.horario.slice(0,5) : 'Sem sessões futuras';
-
-                    document.getElementById('pilulas-container').innerHTML = `
-                        <div class="pílula-item"><span>Idade: -- anos</span></div>
-                        <div class="pílula-item"><i class="fa-regular fa-calendar"></i> <span>Início: ${dataInicioBr}</span></div>
-                        <div class="pílula-item pílula-destaque"><i class="fa-regular fa-clock"></i> <span>Próxima sessão: ${proximaDataBr}</span></div>
+                    htmlSessoes += `
+                        <div class="card-sessao ${statusClass}">
+                            <div class="sessao-esquerda">
+                                <div class="sessao-numero">${numSessao}</div>
+                                <div class="sessao-info-bloco">
+                                    <div class="sessao-titulo-linha">
+                                        <h4>Sessão ${numSessao}</h4>
+                                        <span class="badge-status ${badgeClass}">${badgeText}</span>
+                                    </div>
+                                    <p class="sessao-subtexto"><i class="fa-regular fa-calendar"></i> ${dataBr} às ${c.horario.slice(0,5)}</p>
+                                </div>
+                            </div>
+                            ${acaoBtn}
+                        </div>
                     `;
+                });
 
-                    document.getElementById('metricas-container').innerHTML = `
-                        <div class="cartao-metrica">
-                            <h3>${realizadas}</h3>
-                            <p class="metrica-titulo">Sessões Realizadas</p>
-                            <p class="metrica-sub">de ${totalPlanejado} planejadas</p>
-                        </div>
-                        <div class="cartao-metrica">
-                            <h3>${progressoTratamento}%</h3>
-                            <p class="metrica-titulo">Frequência</p>
-                            <p class="metrica-sub">${realizadas} de ${realizadas} compareceram</p>
-                        </div>
-                        <div class="cartao-metrica">
-                            <h3>${agendadas}</h3>
-                            <p class="metrica-titulo">Agendadas</p>
-                            <p class="metrica-sub">no calendário</p>
-                        </div>
-                    `;
-                }
+                document.getElementById('linha-do-tempo-sessoes').innerHTML = htmlSessoes;
+
+                const totalPlanejado = Math.max(10, consultasPaciente.length);
+                const progressoTratamento = Math.round((realizadas / totalPlanejado) * 100);
+                
+                document.getElementById('porcentagem-texto').textContent = `${progressoTratamento}%`;
+                document.getElementById('barra-preenchimento').style.width = `${progressoTratamento}%`;
+
+                const dataInicioPartes = consultasPaciente[0].data_consulta.split('-');
+                const dataInicioBr = `${dataInicioPartes[2]}/${dataInicioPartes[1]}/${dataInicioPartes[0]}`;
+
+                const proximaConsulta = consultasPaciente.find(c => c.data_consulta >= dataHojeFormato && (c.data_consulta > dataHojeFormato || c.horario.slice(0,5) >= horaAtual));
+                const proximaDataBr = proximaConsulta ? proximaConsulta.data_consulta.split('-').reverse().join('/') + ' às ' + proximaConsulta.horario.slice(0,5) : 'Sem sessões futuras';
+
+                document.getElementById('pilulas-container').innerHTML = `
+                    <div class="pílula-item"><span>Idade: -- anos</span></div>
+                    <div class="pílula-item"><i class="fa-regular fa-calendar"></i> <span>Início: ${dataInicioBr}</span></div>
+                    <div class="pílula-item pílula-destaque"><i class="fa-regular fa-clock"></i> <span>Próxima sessão: ${proximaDataBr}</span></div>
+                `;
+
+                document.getElementById('metricas-container').innerHTML = `
+                    <div class="cartao-metrica">
+                        <h3>${realizadas}</h3>
+                        <p class="metrica-titulo">Sessões Realizadas</p>
+                        <p class="metrica-sub">de ${totalPlanejado} planejadas</p>
+                    </div>
+                    <div class="cartao-metrica">
+                        <h3>${progressoTratamento}%</h3>
+                        <p class="metrica-titulo">Frequência</p>
+                        <p class="metrica-sub">${realizadas} de ${realizadas} compareceram</p>
+                    </div>
+                    <div class="cartao-metrica">
+                        <h3>${agendadas}</h3>
+                        <p class="metrica-titulo">Agendadas</p>
+                        <p class="metrica-sub">no calendário</p>
+                    </div>
+                `;
             } catch (erro) {
                 console.error("Erro ao carregar prontuário real:", erro);
-                document.getElementById('linha-do-tempo-sessoes').innerHTML = '<p style="text-align: center; color: red;">Erro ao se conectar com o servidor Node.js.</p>';
+                document.getElementById('linha-do-tempo-sessoes').innerHTML = '<p style="text-align: center; color: red;">Erro ao carregar prontuário. ' + erro.message + '</p>';
             }
         };
     </script>

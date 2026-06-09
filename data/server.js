@@ -118,23 +118,114 @@ app.post('/api/admin/cadastrar', (req, res) => {
 app.post('/api/agendar', (req, res) => {
     const { estagiario_id, paciente_id, data_consulta, horario } = req.body;
 
-    // Verifica se há uma sala ocupada
-    const sqlVerificaSala = 'SELECT COUNT(*) as quantidade FROM salas WHERE status = "ocupada"';
+    // Verifica conflitos de horário (cada consulta dura 50 minutos)
+    const sql = `
+        SELECT c.id, c.horario
+        FROM consultas c
+        WHERE c.data_consulta = ?
+        AND c.estagiario_id = ?
+    `;
     
-    db.query(sqlVerificaSala, (err, result) => {
-        if (err) return res.status(500).json({ erro: 'Erro ao verificar disponibilidade das salas.' });
+    db.query(sql, [data_consulta, estagiario_id], (err, results) => {
+        if (err) return res.status(500).json({ erro: 'Erro ao verificar disponibilidade.' });
         
-        if (result[0].quantidade > 0) {
-            return res.status(400).json({ erro: 'Não é possível agendar: há uma sala ocupada no momento.' });
+        // Converte horário para minutos para cálculo
+        const [horaReq, minReq] = horario.split(':').map(Number);
+        const minutosReq = horaReq * 60 + minReq;
+        const minutosReqFim = minutosReq + 50;
+        
+        // Verifica se há conflito com outras consultas
+        let temConflito = false;
+        results.forEach(consulta => {
+            const [hora, min] = consulta.horario.split(':').map(Number);
+            const minutosConsulta = hora * 60 + min;
+            const minutosConsultaFim = minutosConsulta + 50;
+            
+            // Verifica sobreposição
+            if ((minutosReq < minutosConsultaFim) && (minutosReqFim > minutosConsulta)) {
+                temConflito = true;
+            }
+        });
+        
+        if (temConflito) {
+            return res.status(400).json({ erro: 'Este horário entra em conflito com outra consulta. Escolha outro horário.' });
         }
 
-        // Se nenhuma sala está ocupada, prossegue com o agendamento
-        const sql = 'INSERT INTO consultas (estagiario_id, paciente_id, data_consulta, horario) VALUES (?, ?, ?, ?)';
+        // Se não há conflito, realiza o agendamento
+        const sqlInsert = 'INSERT INTO consultas (estagiario_id, paciente_id, data_consulta, horario) VALUES (?, ?, ?, ?)';
         
-        db.query(sql, [estagiario_id, paciente_id, data_consulta, horario], (err, result) => {
+        db.query(sqlInsert, [estagiario_id, paciente_id, data_consulta, horario], (err, result) => {
             if (err) return res.status(500).json({ erro: 'Erro ao salvar a consulta no banco de dados.' });
             res.status(201).json({ mensagem: 'Agendamento concluído com sucesso!' });
         });
+    });
+});
+
+
+app.get('/api/horarios-disponiveis', (req, res) => {
+    const { estagiario_id, data_consulta } = req.query;
+
+    if (!estagiario_id || !data_consulta) {
+        return res.status(400).json({ erro: 'Faltam parâmetros: estagiario_id e data_consulta' });
+    }
+
+    // Determina horário de funcionamento baseado no dia da semana
+    const data = new Date(data_consulta + 'T00:00:00');
+    const diaSemana = data.getDay();
+    
+    let horaInicio, horaFim;
+    
+    if (diaSemana === 0) {
+        return res.status(400).json({ erro: 'Clínica fechada aos domingos.' });
+    } else if (diaSemana === 6) {
+        horaInicio = 8;
+        horaFim = 14;
+    } else {
+        horaInicio = 8;
+        horaFim = 20;
+    }
+
+    // Busca consultas agendadas para o estagiário nesse dia
+    const sql = `
+        SELECT c.horario
+        FROM consultas c
+        WHERE c.data_consulta = ?
+        AND c.estagiario_id = ?
+        ORDER BY c.horario
+    `;
+
+    db.query(sql, [data_consulta, estagiario_id], (err, results) => {
+        if (err) return res.status(500).json({ erro: 'Erro ao buscar horários.' });
+
+        const consultasOcupadas = results.map(r => {
+            const [hora, min] = r.horario.split(':').map(Number);
+            return { inicio: hora * 60 + min, fim: hora * 60 + min + 50 };
+        });
+
+        // Gera lista de horários disponíveis (intervalos de 10 minutos)
+        const horariosDisponiveis = [];
+        for (let h = horaInicio; h < horaFim; h++) {
+            for (let m = 0; m < 60; m += 10) {
+                const minutosAtual = h * 60 + m;
+                const minutosFim = minutosAtual + 50;
+
+                // Verifica se não sobrepõe com nenhuma consulta ocupada
+                let livre = true;
+                consultasOcupadas.forEach(ocupada => {
+                    if ((minutosAtual < ocupada.fim) && (minutosFim > ocupada.inicio)) {
+                        livre = false;
+                    }
+                });
+
+                if (livre) {
+                    const horaFormatada = String(h).padStart(2, '0');
+                    const minFormatada = String(m).padStart(2, '0');
+                    horariosDisponiveis.push(`${horaFormatada}:${minFormatada}`);
+                }
+            }
+        }
+
+        res.json({ horariosDisponiveis });
     });
 });
 
